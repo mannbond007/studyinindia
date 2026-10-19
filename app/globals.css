@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+/* ─── Design Tokens ──────────────────────────────────────────── */
+@theme {
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-heading: var(--font-manrope), system-ui, -apple-system, sans-serif;
+
+  --color-brand-primary: #00845A;
+  --color-brand-primary-hover: #00704C;
+  --color-brand-accent: #10b981;
+  --color-brand-light: #ecfdf5;
+  --color-page-bg: #f8fafc;
+  --color-card-bg: #ffffff;
+  --color-text-primary: #111827;
+  --color-text-secondary: #64748b;
+  --color-border-subtle: #e2e8f0;
+}
+
+/* ─── Base Styles ────────────────────────────────────────────── */
+@layer base {
+  :root {
+    --brand-primary: #00845A;
+    --brand-primary-hover: #00704C;
+    --brand-accent: #10b981;
+    --brand-light: #ecfdf5;
+    --page-bg: #f8fafc;
+    --card-bg: #ffffff;
+    --text-primary: #111827;
+    --text-secondary: #64748b;
+    --border-subtle: #e2e8f0;
+    --error: #ef4444;
+    --warning: #f59e0b;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--page-bg);
+    color: var(--text-primary);
+    font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-manrope), system-ui, -apple-system, sans-serif;
+    color: var(--text-primary);
+  }
+}
+
+/* ─── Typography Utilities ───────────────────────────────────── */
+.font-heading {
+  font-family: var(--font-manrope), system-ui, -apple-system, sans-serif;
+}
+
+.font-sans {
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+/* ─── Brand Color Utilities ──────────────────────────────────── */
+.bg-brand-primary {
+  background-color: #047857;
+}
+
+.text-brand-primary {
+  color: #047857;
+}
+
+.border-brand-primary {
+  border-color: #047857;
+}
+
+.bg-brand-accent {
+  background-color: #10b981;
+}
+
+.text-brand-accent {
+  color: #10b981;
+}
+
+.bg-brand-light {
+  background-color: #ecfdf5;
+}
+
+.border-brand-light {
+  border-color: #a7f3d0;
+}
+
+/* ─── Card Utilities ─────────────────────────────────────────── */
+.card-shadow {
+  box-shadow:
+    0 1px 3px 0 rgba(15, 23, 42, 0.05),
+    0 1px 2px -1px rgba(15, 23, 42, 0.05);
+}
+
+.card-hover-shadow {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-hover-shadow:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 10px 25px -5px rgba(4, 120, 87, 0.08),
+    0 8px 10px -6px rgba(4, 120, 87, 0.04);
+}
+
+/* ─── Scrollbar Utilities ────────────────────────────────────── */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

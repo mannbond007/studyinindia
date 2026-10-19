@@ -1,0 +1,358 @@
+// Prisma Schema for Study India Admission Platform
+// PostgreSQL Database (Compatible with Supabase Postgres)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  STUDENT
+  AGENT
+  COUNSELLOR
+  ADMIN
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+}
+
+enum AgentApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum ApplicationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  ACTION_REQUIRED
+  VERIFIED
+  FORWARDED_TO_UNIVERSITY
+  OFFER_RECEIVED
+  ACCEPTED
+  ENROLLED
+  REJECTED
+  WITHDRAWN
+}
+
+enum DocumentType {
+  SEE_MARKSHEET
+  SEE_CHARACTER_CERTIFICATE
+  NEB_TRANSCRIPT
+  NEB_MIGRATION_CERTIFICATE
+  CITIZENSHIP_FRONT
+  CITIZENSHIP_BACK
+  PASSPORT
+  STUDENT_PHOTO
+  EQUIVALENCE_CERTIFICATE
+  OTHER
+}
+
+enum DocumentVerificationStatus {
+  PENDING
+  VERIFIED
+  CORRECTION_REQUESTED
+  REJECTED
+}
+
+enum CommissionStatus {
+  PENDING
+  APPROVED
+  PAID
+  CANCELLED
+}
+
+enum NotificationType {
+  APPLICATION_UPDATE
+  DOCUMENT_ACTION
+  COMMISSION_UPDATE
+  SYSTEM
+}
+
+model User {
+  id            String         @id @default(uuid())
+  clerkId       String         @unique
+  email         String         @unique
+  role          UserRole       @default(STUDENT)
+  status        AccountStatus  @default(ACTIVE)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  studentProfile StudentProfile?
+  agentProfile   AgentProfile?
+  notifications  Notification[]
+  auditLogs      AuditLog[]
+
+  @@index([email])
+  @@index([clerkId])
+  @@index([role])
+}
+
+model StudentProfile {
+  id                    String      @id @default(uuid())
+  userId                String      @unique
+  user                  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName              String
+  dateOfBirth           DateTime?
+  gender                String?
+  phone                 String?
+  whatsapp              String?
+  nepaliCitizenshipNo   String?
+  passportNo            String?
+  cityInNepal           String?
+  provinceInNepal       String?
+  permanentAddress      String?
+
+  // Class 10 (SEE / SLC) details
+  seeSchool             String?
+  seeGpa                Decimal?    @db.Decimal(3, 2)
+  seeYear               Int?
+
+  // Class 12 (NEB / +2) details
+  nebCollege            String?
+  nebStream             String?     // Science, Management, Humanities
+  nebGpa                Decimal?    @db.Decimal(3, 2)
+  nebPcmScore           Decimal?    @db.Decimal(5, 2) // Optional aggregate % in Physics, Chem, Math
+  nebPcbScore           Decimal?    @db.Decimal(5, 2) // Optional aggregate % in Physics, Chem, Bio
+  nebYear               Int?
+
+  completedOnboarding   Boolean     @default(false)
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  applications          Application[]
+  documents             Document[]
+
+  @@index([userId])
+  @@index([phone])
+}
+
+model AgentProfile {
+  id                    String               @id @default(uuid())
+  userId                String               @unique
+  user                  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agencyName            String
+  contactPerson         String
+  phone                 String
+  panOrVatNo            String?
+  officeAddress         String?
+  city                  String?
+  referralCode          String               @unique
+  approvalStatus        AgentApprovalStatus  @default(PENDING)
+  commissionRatePercent Decimal              @default(5.00) @db.Decimal(5, 2)
+  adminRemarks          String?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  referredApplications  Application[]
+  commissions           Commission[]
+
+  @@index([referralCode])
+  @@index([approvalStatus])
+}
+
+model University {
+  id                    String        @id @default(uuid())
+  slug                  String        @unique
+  name                  String
+  city                  String
+  state                 String
+  naacGrade             String
+  nirfRank              Int?
+  establishedYear       Int
+  campusSize            String
+  nepaliStudentCount    Int           @default(0)
+  rating                Decimal       @default(4.5) @db.Decimal(2, 1)
+  description           String
+  hostelFeePerYearINR   Decimal       @db.Decimal(10, 2)
+  image                 String
+  logo                  String?
+  website               String?
+  contactEmail          String?
+  contactPhone          String?
+  isFeatured            Boolean       @default(false)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  courses               Course[]
+  applications          Application[]
+
+  @@index([slug])
+  @@index([city])
+  @@index([state])
+}
+
+model Course {
+  id                    String        @id @default(uuid())
+  universityId          String
+  university            University    @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  name                  String
+  stream                String
+  degree                String
+  durationYears         Int
+  annualFeeINR          Decimal       @db.Decimal(10, 2)
+  totalFeeINR           Decimal       @db.Decimal(10, 2)
+  seatsForInternational Int           @default(20)
+  minEducation          String
+  minGpa                Decimal       @db.Decimal(3, 2)
+  requiredSubjects      String        // Comma separated e.g. "Physics, Chemistry, Mathematics"
+  overview              String
+  careerProspects       String        // Comma separated
+  isPopular             Boolean       @default(false)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  applications          Application[]
+
+  @@index([universityId])
+  @@index([stream])
+  @@index([degree])
+}
+
+model Application {
+  id                    String             @id @default(uuid())
+  applicationRef        String             @unique // e.g. "SI-2026-94812"
+  studentId             String
+  student               StudentProfile     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseId              String
+  course                Course             @relation(fields: [courseId], references: [id])
+  universityId          String
+  university            University         @relation(fields: [universityId], references: [id])
+  agentId               String?
+  referredByAgent       AgentProfile?      @relation(fields: [agentId], references: [id], onDelete: SetNull)
+
+  currentStatus         ApplicationStatus  @default(DRAFT)
+  adminRemarks          String?
+  universityOfferRef    String?
+  admissionDecision     String?
+  submittedAt           DateTime?
+  forwardedAt           DateTime?
+  decidedAt             DateTime?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  documents             Document[]
+  statusHistory         ApplicationStatusHistory[]
+  commission            Commission?
+
+  @@index([applicationRef])
+  @@index([studentId])
+  @@index([universityId])
+  @@index([courseId])
+  @@index([agentId])
+  @@index([currentStatus])
+}
+
+model Document {
+  id                    String                     @id @default(uuid())
+  applicationId         String?
+  application           Application?               @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  studentId             String
+  student               StudentProfile             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  documentType          DocumentType
+  fileKey               String                     // Supabase Storage path/key
+  fileName              String
+  fileSizeBytes         Int
+  fileMimeType          String
+  verificationStatus    DocumentVerificationStatus @default(PENDING)
+  rejectionReason       String?
+  correctionNote        String?
+  verifiedAt            DateTime?
+  verifiedByUserId      String?
+  createdAt             DateTime                   @default(now())
+  updatedAt             DateTime                   @updatedAt
+
+  @@index([studentId])
+  @@index([applicationId])
+  @@index([verificationStatus])
+}
+
+model ApplicationStatusHistory {
+  id                    String            @id @default(uuid())
+  applicationId         String
+  application           Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  fromStatus            ApplicationStatus
+  toStatus              ApplicationStatus
+  note                  String?
+  changedByUserId       String
+  createdAt             DateTime          @default(now())
+
+  @@index([applicationId])
+  @@index([createdAt])
+}
+
+model Commission {
+  id                    String               @id @default(uuid())
+  agentId               String
+  agent                 AgentProfile         @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  applicationId         String               @unique
+  application           Application          @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  eligibleAmountINR     Decimal              @db.Decimal(10, 2)
+  status                CommissionStatus     @default(PENDING)
+  approvalNote          String?
+  approvedAt            DateTime?
+  approvedByUserId      String?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  transactions          CommissionTransaction[]
+
+  @@index([agentId])
+  @@index([status])
+}
+
+model CommissionTransaction {
+  id                    String          @id @default(uuid())
+  commissionId          String
+  commission            Commission      @relation(fields: [commissionId], references: [id], onDelete: Cascade)
+  amountINR             Decimal         @db.Decimal(10, 2)
+  paymentReference      String          // Bank reference or cheque number
+  paymentMethod         String          // Bank Transfer, Cheque, etc.
+  paidAt                DateTime        @default(now())
+  recordedByUserId      String
+  note                  String?
+  createdAt             DateTime        @default(now())
+
+  @@index([commissionId])
+}
+
+model Notification {
+  id                    String           @id @default(uuid())
+  userId                String
+  user                  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title                 String
+  message               String
+  type                  NotificationType @default(SYSTEM)
+  actionUrl             String?
+  read                  Boolean          @default(false)
+  createdAt             DateTime         @default(now())
+
+  @@index([userId])
+  @@index([read])
+}
+
+model AuditLog {
+  id                    String      @id @default(uuid())
+  userId                String?
+  user                  User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userEmail             String?
+  action                String      // e.g. "DOCUMENT_VERIFIED", "APPLICATION_FORWARDED", "COMMISSION_APPROVED"
+  entityType            String      // e.g. "Application", "Document", "Commission", "AgentProfile"
+  entityId              String
+  detailsJson           String?     // Stored metadata diff
+  ipAddress             String?
+  createdAt             DateTime    @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+}
