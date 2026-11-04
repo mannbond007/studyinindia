@@ -1162,33 +1162,48 @@ export function HeroStatsSection() {
         )}
 
         {/* ── Bottom Institutional Trust Strip ── */}
-        <div className="pt-2 flex flex-wrap items-center justify-center sm:justify-between gap-4 text-xs text-slate-500 border-t border-slate-200/70">
-          <div className="flex items-center gap-2 font-bold text-slate-700">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Audited Statutory Accreditations:</span>
+        <div className="relative overflow-hidden rounded-2xl bg-white border border-slate-200/90 p-4 sm:px-6 sm:py-4 shadow-[0_4px_24px_-6px_rgba(15,23,42,0.05)] flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+          {/* Subtle left emerald accent bar */}
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-500 to-teal-600" />
+
+          <div className="flex items-center gap-3 pl-1">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-xs shrink-0">
+              <ShieldCheck className="w-4.5 h-4.5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs sm:text-[13px] font-bold text-slate-900 font-heading tracking-tight">
+                  Official Accreditations &amp; Standards
+                </span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-[10px] font-bold text-emerald-700 uppercase tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Verified
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                All listed universities meet national and international quality benchmarks
+              </p>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 font-semibold text-[11.5px] text-slate-600">
-            <span className="inline-flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
-              AICTE Approved
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
-              UGC Recognized
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
-              NAAC A++ Graded
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
-              Association of Indian Universities (AIU)
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
-              Application Fee: $100 USD (Intl) / NPR 1,000 (Nepal)
-            </span>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+            {[
+              "UGC Recognized",
+              "NAAC A++ Accredited",
+              "AICTE Approved",
+              "AIU Member Universities",
+              "NIRF Top-Ranked",
+            ].map((badge) => (
+              <span
+                key={badge}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-gradient-to-r hover:from-emerald-50/90 hover:to-teal-50/60 border border-slate-200/80 hover:border-emerald-300/80 text-[11.5px] font-semibold text-slate-700 hover:text-emerald-950 shadow-2xs transition-all duration-200"
+              >
+                <span className="w-4 h-4 rounded-full bg-emerald-100/90 text-emerald-700 flex items-center justify-center shrink-0">
+                  <Check className="w-2.5 h-2.5 stroke-[3]" />
+                </span>
+                {badge}
+              </span>
+            ))}
           </div>
         </div>
       </div>

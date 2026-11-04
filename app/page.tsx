@@ -301,66 +301,7 @@ export default function HomePage() {
                 />
 
                 {/* Subtle Image Vignette Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-slate-950/25 pointer-events-none" />
-
-                {/* Inner Image Tag - Top Left */}
-                <div className="absolute top-4 left-4 z-10 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-semibold border border-white/20 shadow-lg">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
-                  </span>
-                  <span>Verified Indian Campus</span>
-                </div>
-
-                {/* Inner Image Tag - Top Right */}
-                <div className="absolute top-4 right-4 z-10 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md text-slate-800 text-[11px] font-bold border border-white shadow-md">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>NIRF Top 100</span>
-                </div>
-              </div>
-
-              {/* Top-Right Floating Card: Fast-Track Offer Letter */}
-              <div
-                className={`group absolute -top-4 -right-2 sm:-top-5 sm:-right-4 z-20
-                transition-all duration-700 delay-300
-                ${heroReady ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"}`}
-              >
-                <div className="flex items-center gap-3 bg-white/95 backdrop-blur-xl p-3 sm:p-3.5 rounded-2xl border border-white/90 shadow-[0_16px_36px_-8px_rgba(15,23,42,0.16)] ring-1 ring-slate-900/[0.04] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_20px_40px_-8px_rgba(16,185,129,0.2)]">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-sm shrink-0">
-                    <FileCheck2 className="w-5 h-5" />
-                  </div>
-                  <div className="pr-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs sm:text-[13px] font-bold text-slate-900 font-heading">
-                        Fast-Track Offer
-                      </span>
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black bg-emerald-100 text-emerald-800 uppercase tracking-wider">
-                        Direct
-                      </span>
-                    </div>
-                    <p className="text-[11px] font-semibold text-emerald-700 leading-tight mt-0.5">
-                      7–10 Working Days
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom-Right Floating Card: Visa & Immigration Success */}
-              <div
-                className={`group absolute -bottom-5 -right-2 sm:bottom-4 sm:-right-4 z-20
-                transition-all duration-700 delay-400
-                ${heroReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
-              >
-                <div className="flex items-center gap-2.5 bg-slate-900/95 text-white backdrop-blur-xl py-2 px-3 sm:py-2.5 sm:px-3.5 rounded-xl border border-slate-800 shadow-[0_16px_36px_-8px_rgba(15,23,42,0.3)] transition-all duration-300 group-hover:-translate-y-0.5">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
-                  </span>
-                  <div className="text-[11px] leading-tight font-medium">
-                    <span className="font-bold text-white block">99.2% Visa Clearance</span>
-                    <span className="text-slate-400 text-[10px]">Ministry e-FRRO Approved</span>
-                  </div>
-                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/30 via-transparent to-transparent pointer-events-none" />
               </div>
 
               {/* Bottom-Left Floating Badge: Social Proof */}
