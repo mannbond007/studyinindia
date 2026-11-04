@@ -101,14 +101,32 @@ export default function HomePage() {
                   : "opacity-0 translate-y-6"
               }`}
             >
-              {/* Eyebrow */}
-              <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/70 text-emerald-700 text-[11px] font-bold uppercase tracking-widest">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
-                </span>
-                Global Admissions Open 2026–27
-              </span>
+              {/* Eyebrow & Institutional Tagline */}
+              <div className="flex flex-col items-start gap-2.5">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50/90 border border-emerald-200/80 text-emerald-800 text-[11px] font-bold uppercase tracking-widest shadow-2xs">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600" />
+                  </span>
+                  Global Admissions Open 2027–28
+                </div>
+
+                <div className="inline-flex items-center gap-2.5 pl-2 pr-3.5 py-1.5 rounded-xl bg-white border border-slate-200/80 shadow-[0_2px_12px_-3px_rgba(15,23,42,0.06)]">
+                  <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-2xs shrink-0">
+                    <Globe className="w-3.5 h-3.5" />
+                  </span>
+                  <span className="text-xs sm:text-[13px] font-medium text-slate-600 tracking-tight">
+                    Connecting{" "}
+                    <span className="font-bold text-slate-900">
+                      International Students
+                    </span>{" "}
+                    to{" "}
+                    <span className="font-bold text-emerald-700">
+                      Indian Universities
+                    </span>
+                  </span>
+                </div>
+              </div>
 
               {/* Headline */}
               <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-extrabold text-slate-900 tracking-tight leading-[1.1] font-heading">
@@ -176,10 +194,10 @@ export default function HomePage() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
-                        UGC &amp; NAAC A++
+                        UGC Recognized
                       </p>
-                      <p className="text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5 truncate">
-                        Statutory Accreditation
+                      <p className="text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
+                        NAAC A++ Accreditation
                       </p>
                     </div>
                   </div>
@@ -190,10 +208,10 @@ export default function HomePage() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
-                        Worldwide Mobility
+                        Globally Valid Degrees
                       </p>
-                      <p className="text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5 truncate">
-                        WES, WHO, ABET &amp; AIU
+                      <p className="text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
+                        Accepted Worldwide
                       </p>
                     </div>
                   </div>
@@ -204,10 +222,10 @@ export default function HomePage() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
-                        Student e-Visa Support
+                        Easy Visa Support
                       </p>
-                      <p className="text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5 truncate">
-                        Official e-FRRO Guidance
+                      <p className="text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
+                        Step-by-Step Guidance
                       </p>
                     </div>
                   </div>
@@ -219,10 +237,10 @@ export default function HomePage() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
-                        Verified Tuition Fees
+                        Clear Tuition Fees
                       </p>
-                      <p className="text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5 truncate">
-                        Direct Rates in USD &amp; INR
+                      <p className="text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
+                        No Hidden Charges
                       </p>
                     </div>
                   </div>
@@ -233,10 +251,10 @@ export default function HomePage() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
-                        Direct Offer Letters
+                        Fast Offer Letters
                       </p>
-                      <p className="text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5 truncate">
-                        7–10 Working Days Intake
+                      <p className="text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
+                        In 7–10 Working Days
                       </p>
                     </div>
                   </div>
@@ -247,10 +265,10 @@ export default function HomePage() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
-                        50+ Countries Network
+                        50+ Countries
                       </p>
-                      <p className="text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5 truncate">
-                        10,000+ Global Students
+                      <p className="text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
+                        10,000+ Students Helped
                       </p>
                     </div>
                   </div>
