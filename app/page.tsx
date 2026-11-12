@@ -184,90 +184,94 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              {/* Pro Reliability Trust Grid (3 Top / 3 Bottom) */}
+              {/* Pro Reliability Trust Grid (2x3 on Mobile / 3x2 on Desktop) */}
               <div className="pt-2">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-2.5 max-w-2xl">
-                  {/* Row 1 - Top 3 */}
-                  <div className="group flex items-center gap-2.5 p-2.5 rounded-xl bg-white/80 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:shadow-xs transition-all duration-200">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100/80 flex items-center justify-center text-emerald-600 shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-200">
-                      <ShieldCheck className="w-4 h-4" />
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5 max-w-2xl">
+                  {/* Card 1 */}
+                  <div className="group flex items-center gap-2 sm:gap-2.5 p-2.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_2px_8px_-3px_rgba(15,23,42,0.05)] hover:shadow-xs transition-all duration-200">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600 shrink-0 group-hover:from-emerald-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-200">
+                      <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
+                      <p className="text-[11px] sm:text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
                         UGC Recognized
                       </p>
-                      <p className="text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
+                      <p className="text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
                         NAAC A++ Accreditation
                       </p>
                     </div>
                   </div>
 
-                  <div className="group flex items-center gap-2.5 p-2.5 rounded-xl bg-white/80 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:shadow-xs transition-all duration-200">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100/80 flex items-center justify-center text-emerald-600 shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-200">
-                      <Award className="w-4 h-4" />
+                  {/* Card 2 */}
+                  <div className="group flex items-center gap-2 sm:gap-2.5 p-2.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_2px_8px_-3px_rgba(15,23,42,0.05)] hover:shadow-xs transition-all duration-200">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600 shrink-0 group-hover:from-emerald-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-200">
+                      <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
+                      <p className="text-[11px] sm:text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
                         Globally Valid Degrees
                       </p>
-                      <p className="text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
+                      <p className="text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
                         Accepted Worldwide
                       </p>
                     </div>
                   </div>
 
-                  <div className="group flex items-center gap-2.5 p-2.5 rounded-xl bg-white/80 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:shadow-xs transition-all duration-200">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100/80 flex items-center justify-center text-emerald-600 shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-200">
-                      <FileCheck2 className="w-4 h-4" />
+                  {/* Card 3 */}
+                  <div className="group flex items-center gap-2 sm:gap-2.5 p-2.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_2px_8px_-3px_rgba(15,23,42,0.05)] hover:shadow-xs transition-all duration-200">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600 shrink-0 group-hover:from-emerald-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-200">
+                      <FileCheck2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
+                      <p className="text-[11px] sm:text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
                         Easy Visa Support
                       </p>
-                      <p className="text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
+                      <p className="text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
                         Step-by-Step Guidance
                       </p>
                     </div>
                   </div>
 
-                  {/* Row 2 - Bottom 3 */}
-                  <div className="group flex items-center gap-2.5 p-2.5 rounded-xl bg-white/80 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:shadow-xs transition-all duration-200">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100/80 flex items-center justify-center text-emerald-600 shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-200">
-                      <Lock className="w-4 h-4" />
+                  {/* Card 4 */}
+                  <div className="group flex items-center gap-2 sm:gap-2.5 p-2.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_2px_8px_-3px_rgba(15,23,42,0.05)] hover:shadow-xs transition-all duration-200">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600 shrink-0 group-hover:from-emerald-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-200">
+                      <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
+                      <p className="text-[11px] sm:text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
                         Clear Tuition Fees
                       </p>
-                      <p className="text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
+                      <p className="text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
                         No Hidden Charges
                       </p>
                     </div>
                   </div>
 
-                  <div className="group flex items-center gap-2.5 p-2.5 rounded-xl bg-white/80 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:shadow-xs transition-all duration-200">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100/80 flex items-center justify-center text-emerald-600 shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-200">
-                      <Clock className="w-4 h-4" />
+                  {/* Card 5 */}
+                  <div className="group flex items-center gap-2 sm:gap-2.5 p-2.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_2px_8px_-3px_rgba(15,23,42,0.05)] hover:shadow-xs transition-all duration-200">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600 shrink-0 group-hover:from-emerald-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-200">
+                      <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
+                      <p className="text-[11px] sm:text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
                         Fast Offer Letters
                       </p>
-                      <p className="text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
+                      <p className="text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
                         In 7–10 Working Days
                       </p>
                     </div>
                   </div>
 
-                  <div className="group flex items-center gap-2.5 p-2.5 rounded-xl bg-white/80 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:shadow-xs transition-all duration-200">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100/80 flex items-center justify-center text-emerald-600 shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-200">
-                      <Globe className="w-4 h-4" />
+                  {/* Card 6 */}
+                  <div className="group flex items-center gap-2 sm:gap-2.5 p-2.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_2px_8px_-3px_rgba(15,23,42,0.05)] hover:shadow-xs transition-all duration-200">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600 shrink-0 group-hover:from-emerald-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-200">
+                      <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
+                      <p className="text-[11px] sm:text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
                         50+ Countries
                       </p>
-                      <p className="text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
+                      <p className="text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
                         10,000+ Students Helped
                       </p>
                     </div>
