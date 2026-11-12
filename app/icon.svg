@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="512" height="512" fill="none">
+  <defs>
+    <!-- Top Layer: HDR Luminous Green Gradients -->
+    <linearGradient id="greenTop" x1="32" y1="5" x2="32" y2="34" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#86EFAC" />
+      <stop offset="28%" stop-color="#4ADE80" />
+      <stop offset="72%" stop-color="#22C55E" />
+      <stop offset="100%" stop-color="#16A34A" />
+    </linearGradient>
+    <linearGradient id="greenEdge" x1="5" y1="22" x2="59" y2="38" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#15803D" />
+      <stop offset="50%" stop-color="#14532D" />
+      <stop offset="100%" stop-color="#166534" />
+    </linearGradient>
+
+    <!-- Middle Layer: HDR Electric Cyan & Royal Blue Gradients -->
+    <linearGradient id="blueTop" x1="5" y1="31.5" x2="59" y2="31.5" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="25%" stop-color="#0EA5E9" />
+      <stop offset="50%" stop-color="#0284C7" />
+      <stop offset="75%" stop-color="#0EA5E9" />
+      <stop offset="100%" stop-color="#38BDF8" />
+    </linearGradient>
+    <radialGradient id="blueCoreShadow" cx="50%" cy="42%" r="42%">
+      <stop offset="0%" stop-color="#1E3A8A" stop-opacity="0.95" />
+      <stop offset="55%" stop-color="#1D4ED8" stop-opacity="0.75" />
+      <stop offset="100%" stop-color="#0284C7" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="blueEdge" x1="5" y1="34" x2="59" y2="49" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0369A1" />
+      <stop offset="50%" stop-color="#0C4A6E" />
+      <stop offset="100%" stop-color="#075985" />
+    </linearGradient>
+
+    <!-- Bottom Layer: HDR Platinum / Silver-White Gradients -->
+    <linearGradient id="silverTop" x1="5" y1="43" x2="59" y2="43" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F1F5F9" />
+      <stop offset="25%" stop-color="#E2E8F0" />
+      <stop offset="50%" stop-color="#CBD5E1" />
+      <stop offset="75%" stop-color="#E2E8F0" />
+      <stop offset="100%" stop-color="#F8FAFC" />
+    </linearGradient>
+    <radialGradient id="silverCoreShadow" cx="50%" cy="40%" r="44%">
+      <stop offset="0%" stop-color="#334155" stop-opacity="0.9" />
+      <stop offset="60%" stop-color="#64748B" stop-opacity="0.65" />
+      <stop offset="100%" stop-color="#94A3B8" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="silverEdge" x1="5" y1="45" x2="59" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#94A3B8" />
+      <stop offset="50%" stop-color="#475569" />
+      <stop offset="100%" stop-color="#64748B" />
+    </linearGradient>
+
+    <!-- Soft Drop Shadow Filter for 3D Depth -->
+    <filter id="layerShadow" x="-12%" y="-10%" width="124%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="1.6" flood-color="#0F172A" flood-opacity="0.38" />
+    </filter>
+  </defs>
+
+  <!-- ═══ 1. BOTTOM LAYER (SILVER / PLATINUM) ═══ -->
+  <g filter="url(#layerShadow)">
+    <!-- 3D Extruded Bottom Rim -->
+    <path d="M5 42.5L32 56L59 42.5V46.8L32 60.3L5 46.8V42.5Z" fill="url(#silverEdge)" />
+    <!-- Main Isometric Diamond Face -->
+    <path d="M32 29L59 42.5L32 56L5 42.5L32 29Z" fill="url(#silverTop)" />
+    <!-- Ambient Occlusion Shadow from Middle Layer -->
+    <path d="M32 29L59 42.5L32 56L5 42.5L32 29Z" fill="url(#silverCoreShadow)" />
+    <!-- Crisp Specular Rim Highlight -->
+    <path d="M5.8 42.5L32 55.5L58.2 42.5" stroke="#FFFFFF" stroke-width="1.1" stroke-linecap="round" stroke-opacity="0.85" />
+  </g>
+
+  <!-- ═══ 2. MIDDLE LAYER (ELECTRIC CYAN / ROYAL BLUE) ═══ -->
+  <g filter="url(#layerShadow)">
+    <!-- 3D Extruded Bottom Rim -->
+    <path d="M5 31L32 44.5L59 31V35.3L32 48.8L5 35.3V31Z" fill="url(#blueEdge)" />
+    <!-- Main Isometric Diamond Face -->
+    <path d="M32 17.5L59 31L32 44.5L5 31L32 17.5Z" fill="url(#blueTop)" />
+    <!-- Deep Royal Blue Core Shadow from Top Layer -->
+    <path d="M32 17.5L59 31L32 44.5L5 31L32 17.5Z" fill="url(#blueCoreShadow)" />
+    <!-- Crisp Cyan Specular Rim Highlight -->
+    <path d="M5.8 31L32 44L58.2 31" stroke="#BAE6FD" stroke-width="1.1" stroke-linecap="round" stroke-opacity="0.85" />
+  </g>
+
+  <!-- ═══ 3. TOP LAYER (LUMINOUS HDR EMERALD GREEN) ═══ -->
+  <g filter="url(#layerShadow)">
+    <!-- 3D Extruded Bottom Rim -->
+    <path d="M5 19L32 32.5L59 19V23.3L32 36.8L5 23.3V19Z" fill="url(#greenEdge)" />
+    <!-- Main Isometric Diamond Face -->
+    <path d="M32 5.5L59 19L32 32.5L5 19L32 5.5Z" fill="url(#greenTop)" />
+    <!-- Top Specular Gloss Sheen -->
+    <path d="M32 6.3L57.8 19L32 31.8L6.2 19L32 6.3Z" stroke="#DCFCE7" stroke-width="1.1" stroke-opacity="0.8" />
+  </g>
+</svg>

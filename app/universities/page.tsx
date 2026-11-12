@@ -179,9 +179,11 @@ export default function UniversitiesPage() {
               onChange={(e) => setSelectedGrade(e.target.value)}
               className="w-full h-11 px-3 rounded-xl border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
             >
-              <option value="all">All NAAC Accreditations</option>
+              <option value="all">All Accreditations</option>
               <option value="A++">NAAC A++</option>
               <option value="A+">NAAC A+</option>
+              <option value="A">NAAC A</option>
+              <option value="UGC Recognized">UGC Recognized</option>
             </select>
           </div>
         </div>
@@ -232,7 +234,9 @@ export default function UniversitiesPage() {
                     />
                     <div className="absolute top-3 left-3 flex gap-2">
                       <Badge variant="accent" className="font-bold">
-                        NAAC {uni.naacGrade}
+                        {uni.naacGrade.includes("UGC")
+                          ? uni.naacGrade
+                          : `NAAC ${uni.naacGrade}`}
                       </Badge>
                       {uni.nirfRank && (
                         <Badge
@@ -434,7 +438,9 @@ export default function UniversitiesPage() {
                     {comparedUniversities.map((u) => (
                       <td key={u.id} className="py-3.5 px-4">
                         <Badge variant="accent" className="font-bold">
-                          Grade {u.naacGrade}
+                          {u.naacGrade.includes("UGC")
+                            ? u.naacGrade
+                            : `Grade ${u.naacGrade}`}
                         </Badge>
                       </td>
                     ))}

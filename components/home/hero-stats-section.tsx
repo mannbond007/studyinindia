@@ -354,7 +354,7 @@ const globalStudentPathways: CountryPathway[] = [
 /* ─── Stream ROI Calculator Data ─── */
 interface StreamCost {
   name: string;
-  duration: string;
+  programmes: string[];
   annualFeeINR: number;
   annualFeeUSD: number;
   annualFeeNPR: number;
@@ -365,8 +365,8 @@ interface StreamCost {
 
 const streamData: Record<string, StreamCost> = {
   engineering: {
-    name: "Engineering & AI (B.Tech)",
-    duration: "4 Years",
+    name: "ENGINEERING & TECHNOLOGY",
+    programmes: ["B.Tech | 4 Years"],
     annualFeeINR: 195000,
     annualFeeUSD: 2350,
     annualFeeNPR: 312000,
@@ -375,8 +375,8 @@ const streamData: Record<string, StreamCost> = {
     popularCareers: ["AI Engineer", "Full Stack Developer", "Cloud Architect", "Robotics Specialist"],
   },
   medical: {
-    name: "Pharmacy & Health Sciences (B.Pharm / Nursing)",
-    duration: "3 - 4 Years",
+    name: "PHARMACY & HEALTH SCIENCES",
+    programmes: ["B.Pharm | 4 Years", "Nursing | 2–4 Years (As per Programme)"],
     annualFeeINR: 220000,
     annualFeeUSD: 2650,
     annualFeeNPR: 352000,
@@ -385,8 +385,8 @@ const streamData: Record<string, StreamCost> = {
     popularCareers: ["Clinical Pharmacist", "Nursing Officer", "Biomedical Specialist", "Healthcare Executive"],
   },
   management: {
-    name: "Business & Management (BBA / MBA)",
-    duration: "2 - 3 Years",
+    name: "BUSINESS & MANAGEMENT",
+    programmes: ["BBA | 3–4 Years", "MBA | 2 Years"],
     annualFeeINR: 175000,
     annualFeeUSD: 2100,
     annualFeeNPR: 280000,
@@ -395,8 +395,8 @@ const streamData: Record<string, StreamCost> = {
     popularCareers: ["Financial Analyst", "Product Manager", "Consultant", "Marketing Strategist"],
   },
   computing: {
-    name: "Computer Applications (BCA / MCA)",
-    duration: "3 Years",
+    name: "COMPUTER APPLICATIONS",
+    programmes: ["BCA | 3–4 Years", "MCA | 2 Years"],
     annualFeeINR: 145000,
     annualFeeUSD: 1750,
     annualFeeNPR: 232000,
@@ -425,7 +425,7 @@ export function HeroStatsSection() {
   // Helper to format currency
   const formatCost = (inr: number, usd: number, npr: number) => {
     if (selectedCurrency === "USD") return `$${usd.toLocaleString("en-US")} / Year`;
-    if (selectedCurrency === "NPR") return `रू ${npr.toLocaleString("en-US")} / Year`;
+    if (selectedCurrency === "NPR") return `NPR ${npr.toLocaleString("en-US")} / Year`;
     return `₹${inr.toLocaleString("en-IN")} / Year`;
   };
 
@@ -961,69 +961,96 @@ export function HeroStatsSection() {
             {/* Header + Currency Selector */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
               <div>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-900 font-heading">
-                  Interactive Degree Tuition & Placement Benchmark
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 font-heading tracking-tight uppercase">
+                  Interactive Course Fee &amp; Placement Comparison
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Compare authentic university tuition schedules with verified average campus placement offers.
+                <p className="text-xs sm:text-[13px] text-slate-500 mt-1">
+                  Compare University Tuition Fees &amp; Campus Placement Opportunities Across India.
                 </p>
               </div>
 
               {/* Currency Selector */}
-              <div className="inline-flex items-center p-1 rounded-xl bg-slate-100 border border-slate-200/80 self-start sm:self-auto">
-                <button
-                  type="button"
-                  onClick={() => setSelectedCurrency("INR")}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    selectedCurrency === "INR"
-                      ? "bg-white text-emerald-800 shadow-2xs border border-slate-200/60"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  ₹ INR
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedCurrency("USD")}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    selectedCurrency === "USD"
-                      ? "bg-white text-emerald-800 shadow-2xs border border-slate-200/60"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  $ USD
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedCurrency("NPR")}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    selectedCurrency === "NPR"
-                      ? "bg-white text-emerald-800 shadow-2xs border border-slate-200/60"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  रू NPR (1:1.60 Peg)
-                </button>
+              <div className="flex flex-col sm:items-end gap-1.5 self-start sm:self-auto">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                  Select Currency
+                </span>
+                <div className="inline-flex items-center p-1 rounded-xl bg-slate-100 border border-slate-200/80">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCurrency("INR")}
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      selectedCurrency === "INR"
+                        ? "bg-white text-emerald-800 shadow-2xs border border-slate-200/60"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    ₹ INR
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCurrency("USD")}
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      selectedCurrency === "USD"
+                        ? "bg-white text-emerald-800 shadow-2xs border border-slate-200/60"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    $ USD
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCurrency("NPR")}
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      selectedCurrency === "NPR"
+                        ? "bg-white text-emerald-800 shadow-2xs border border-slate-200/60"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    NPR
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Stream Selector Buttons */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {Object.entries(streamData).map(([key, item]) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setSelectedStream(key)}
-                  className={`p-3.5 rounded-2xl text-left border transition-all cursor-pointer ${
-                    selectedStream === key
-                      ? "bg-emerald-50/80 border-emerald-500 shadow-xs ring-1 ring-emerald-400/40"
-                      : "bg-slate-50/60 border-slate-200/80 hover:bg-slate-100/70 text-slate-700"
-                  }`}
-                >
-                  <div className="text-xs font-bold text-slate-900">{item.name}</div>
-                  <div className="text-[11px] text-slate-500 mt-1">{item.duration} Degree</div>
-                </button>
-              ))}
+            {/* Explore Academic Programmes */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
+                  Explore Academic Programmes
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                {Object.entries(streamData).map(([key, item]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setSelectedStream(key)}
+                    className={`p-4 rounded-2xl text-left border transition-all cursor-pointer flex flex-col justify-between gap-2 ${
+                      selectedStream === key
+                        ? "bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/50 border-emerald-500 shadow-xs ring-1 ring-emerald-400/40"
+                        : "bg-slate-50/60 border-slate-200/80 hover:bg-slate-100/70 hover:border-slate-300 text-slate-700"
+                    }`}
+                  >
+                    <div className="text-xs font-extrabold tracking-wide text-slate-900 uppercase">
+                      {item.name}
+                    </div>
+                    <div className="space-y-1">
+                      {item.programmes.map((prog, idx) => (
+                        <div
+                          key={idx}
+                          className={`text-[11.5px] font-medium leading-snug ${
+                            selectedStream === key ? "text-emerald-800" : "text-slate-600"
+                          }`}
+                        >
+                          {prog}
+                        </div>
+                      ))}
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Calculated Results Bento */}
@@ -1056,7 +1083,7 @@ export function HeroStatsSection() {
                   </span>
                 </div>
                 <div className="text-xs text-slate-500 pt-1">
-                  Average campus recruitment across Google, Microsoft, Amazon & TCS
+                  Average campus recruitment across Google, Microsoft, Amazon &amp; TCS
                 </div>
               </div>
 
@@ -1081,10 +1108,10 @@ export function HeroStatsSection() {
             </div>
 
             {/* Bottom Call to Action */}
-            <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <span className="text-xs text-slate-500 flex items-center gap-1.5">
-                <Info className="w-4 h-4 text-emerald-600" />
-                Tuition figures are indicative registrar base fees. Exact fees depend on academic scholarship discount.
+            <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <span className="text-[11px] font-bold uppercase tracking-widest text-emerald-800 flex items-center gap-2">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                Compare Fees • Explore Universities • Discover Placement Opportunities
               </span>
               <Link href="/courses">
                 <Button className="h-10 px-5 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-xs gap-2">
@@ -1098,101 +1125,92 @@ export function HeroStatsSection() {
 
         {/* ── TAB 3: ACCREDITATION VAULT ── */}
         {activeTab === "accreditation" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 animate-in fade-in duration-300">
-            <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs space-y-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-700">
-                <Landmark className="w-5 h-5" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 animate-in fade-in duration-300">
+            <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs flex flex-col justify-between space-y-4">
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-700">
+                  <Landmark className="w-5 h-5" />
+                </div>
+                <h4 className="text-sm font-bold text-slate-900 font-heading tracking-wide uppercase">
+                  UGC Recognised Universities
+                </h4>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Degrees Awarded by Universities Recognised by the University Grants Commission (UGC), as applicable under the UGC Act, 1956.
+                </p>
               </div>
-              <h4 className="text-sm font-bold text-slate-900 font-heading">
-                UGC Recognized
-              </h4>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Degrees conferred by universities statutory under Section 2(f) and 12(B) of the University Grants Commission Act, 1956.
-              </p>
-              <div className="text-[11px] font-bold text-emerald-700">
-                ✓ Worldwide Equivalence
-              </div>
-            </div>
-
-            <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs space-y-3">
-              <div className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-200/80 flex items-center justify-center text-teal-700">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <h4 className="text-sm font-bold text-slate-900 font-heading">
-                AICTE Approved
-              </h4>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                All Engineering, Technology, Architecture, and Management programs adhere to All India Council for Technical Education norms.
-              </p>
-              <div className="text-[11px] font-bold text-teal-700">
-                ✓ Washington Accord Aligned
+              <div className="text-[11px] font-bold text-emerald-700 pt-1">
+                ✓ International Academic Recognition
               </div>
             </div>
 
-            <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs space-y-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200/80 flex items-center justify-center text-amber-700">
-                <Award className="w-5 h-5" />
+            <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs flex flex-col justify-between space-y-4">
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-200/80 flex items-center justify-center text-teal-700">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <h4 className="text-sm font-bold text-slate-900 font-heading tracking-wide uppercase">
+                  AICTE Approved
+                </h4>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Applicable Technical &amp; Professional Programmes Follow All India Council for Technical Education (AICTE) Approval Norms.
+                </p>
               </div>
-              <h4 className="text-sm font-bold text-slate-900 font-heading">
-                NAAC A++ Graded
-              </h4>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Highest national grade awarded by the National Assessment and Accreditation Council for faculty quality and research infrastructure.
-              </p>
-              <div className="text-[11px] font-bold text-amber-800">
-                ✓ Top 5% in India
+              <div className="text-[11px] font-bold text-teal-700 pt-1">
+                ✓ Industry-Relevant Curriculum
               </div>
             </div>
 
-            <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs space-y-3">
-              <div className="w-10 h-10 rounded-2xl bg-purple-50 border border-purple-200/80 flex items-center justify-center text-purple-700">
-                <FileCheck className="w-5 h-5" />
+            <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs flex flex-col justify-between space-y-4">
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200/80 flex items-center justify-center text-amber-700">
+                  <Award className="w-5 h-5" />
+                </div>
+                <h4 className="text-sm font-bold text-slate-900 font-heading tracking-wide uppercase">
+                  NAAC A++ Accredited
+                </h4>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Highest Grade Awarded by the National Assessment and Accreditation Council (NAAC) under its applicable accreditation framework, recognising institutional quality and academic excellence.
+                </p>
               </div>
-              <h4 className="text-sm font-bold text-slate-900 font-heading">
-                Student e-Visa &amp; Bilateral Treaties
-              </h4>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Fast-track 5-day paperless Student e-Visa globally, plus reciprocal visa-free study rights for citizens of Nepal and Bhutan.
-              </p>
-              <div className="text-[11px] font-bold text-purple-700">
-                ✓ Zero Embassy Formalities
+              <div className="text-[11px] font-bold text-amber-800 pt-1">
+                ✓ Quality Academic Environment
               </div>
             </div>
           </div>
         )}
 
         {/* ── Bottom Institutional Trust Strip ── */}
-        <div className="relative overflow-hidden rounded-2xl bg-white border border-slate-200/90 p-4 sm:px-6 sm:py-4 shadow-[0_4px_24px_-6px_rgba(15,23,42,0.05)] flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        <div className="relative overflow-hidden rounded-2xl bg-white border border-slate-200/90 p-5 sm:px-6 sm:py-5 shadow-[0_4px_24px_-6px_rgba(15,23,42,0.05)] flex flex-col gap-4">
           {/* Subtle left emerald accent bar */}
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-500 to-teal-600" />
 
-          <div className="flex items-center gap-3 pl-1">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-xs shrink-0">
-              <ShieldCheck className="w-4.5 h-4.5" />
+          <div className="flex items-start sm:items-center gap-3.5 pl-1">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-xs shrink-0 mt-0.5 sm:mt-0">
+              <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs sm:text-[13px] font-bold text-slate-900 font-heading tracking-tight">
-                  Official Accreditations &amp; Standards
-                </span>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-[10px] font-bold text-emerald-700 uppercase tracking-wider">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-[10px] font-bold text-emerald-800 uppercase tracking-wider">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Verified
+                  Official Recognition &amp; Accreditation
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-                All listed universities meet national and international quality benchmarks
+              <h4 className="text-xs sm:text-sm font-extrabold text-slate-900 font-heading tracking-wide uppercase mt-1.5">
+                Recognised &amp; Quality-Assessed Institutions
+              </h4>
+              <p className="text-[11.5px] text-slate-500 font-medium mt-0.5">
+                University Recognition, Institutional Accreditation &amp; Regulatory Approvals as Applicable.
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 pl-1 pt-1 border-t border-slate-100">
             {[
-              "UGC Recognized",
-              "NAAC A++ Accredited",
-              "AICTE Approved",
+              "UGC Recognised Universities",
+              "NAAC Accredited Institutions (A++ Grade Where Applicable)",
+              "AICTE Approved Programmes (Where Applicable)",
               "AIU Member Universities",
-              "NIRF Top-Ranked",
+              "NIRF Ranked Institutions",
             ].map((badge) => (
               <span
                 key={badge}

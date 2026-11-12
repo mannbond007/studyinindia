@@ -40,6 +40,15 @@ export const metadata: Metadata = {
     "StudyIndia Global admissions",
   ],
   authors: [{ name: "StudyIndia Global Admissions" }],
+  icons: {
+    icon: [
+      { url: "/favicon.svg?v=2", type: "image/svg+xml" },
+      { url: "/favicon.png?v=2", sizes: "512x512", type: "image/png" },
+      { url: "/favicon.ico?v=2", sizes: "any" },
+    ],
+    shortcut: "/favicon.svg?v=2",
+    apple: "/favicon.png?v=2",
+  },
 };
 
 export default function RootLayout({

@@ -129,10 +129,10 @@ export default function HomePage() {
               </div>
 
               {/* Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-extrabold text-slate-900 tracking-tight leading-[1.1] font-heading">
-                Your Path to{" "}
-                <span className="text-emerald-600">
-                  India&apos;s Best Universities &amp; Institutions
+              <h1 className="text-3xl sm:text-4xl lg:text-[38px] xl:text-[42px] font-extrabold text-slate-900 tracking-tight leading-[1.16] font-heading">
+                <span className="block">Your Path to India&apos;s Best</span>
+                <span className="block bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent sm:whitespace-nowrap">
+                  Universities &amp; Institutions
                 </span>
               </h1>
 
