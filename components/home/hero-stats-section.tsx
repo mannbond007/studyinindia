@@ -37,6 +37,10 @@ function useSmoothCounter(target: number, duration: number = 2000, decimals: num
   const animatedRef = useRef(false);
 
   useEffect(() => {
+    if (animatedRef.current) {
+      setValue(target);
+      return;
+    }
     const element = ref.current;
     if (!element) return;
 
@@ -93,6 +97,7 @@ interface MetricDetail {
   tagColor: string;
   trend: string;
   description: string;
+  highlightsTitle?: string;
   keyPoints: string[];
   accreditationNote: string;
   ctaText: string;
@@ -104,41 +109,46 @@ const flagshipMetrics: MetricDetail[] = [
     id: "universities",
     numberValue: 300,
     suffix: "+",
-    label: "Accredited Universities & Institutions",
-    secondaryLabel: "NIRF Top-100 & NAAC A++ Campuses",
-    tag: "UGC & AICTE Verified",
+    label: "UNIVERSITIES & INSTITUTIONS",
+    secondaryLabel: "NIRF RANKED & NAAC ACCREDITED INSTITUTIONS",
+    tag: "UGC RECOGNISED • AICTE APPROVED (WHERE APPLICABLE) • NAAC ACCREDITED",
     tagColor: "bg-emerald-50 text-emerald-800 border-emerald-200/80",
     trend: "Top 1% Tier-1 Institutions",
     description:
-      "Direct partnership with India's most prestigious Central, State, and Autonomous Deemed Universities offering recognized world-class education with dedicated international hostels.",
+      "Strong Academic Network with India’s Leading Central, State, Private & Deemed-to-be Universities, Offering Quality Education Opportunities for International Students.",
+    highlightsTitle: "ACADEMIC & CAMPUS HIGHLIGHTS",
     keyPoints: [
-      "100% English-medium classroom pedagogy with globally benchmarked curriculum",
-      "World-class campus infrastructure with modern research labs & smart classrooms",
-      "Direct university admissions with official verified tuition and zero inflated fees",
-      "Campuses located in top educational hubs: Delhi NCR, Bengaluru, Chennai, Pune, Vellore",
+      "English-Medium Academic Programmes & Globally Relevant Curriculum",
+      "Modern Campus Infrastructure, Research Labs & Smart Classrooms",
+      "Direct University Admissions with Transparent Official Fee Structures",
+      "International Student Support, Hostel & Accommodation Facilities",
+      "Prime Educational Hubs: Delhi NCR, Bengaluru, Chennai, Pune, Vellore & Many More",
     ],
-    accreditationNote: "UGC & AICTE Approved Campuses • Transparent University Fees",
+    accreditationNote:
+      "UGC RECOGNISED UNIVERSITIES • NAAC ACCREDITED INSTITUTIONS • TRANSPARENT UNIVERSITY FEES",
     ctaText: "Explore 300+ Campuses",
     ctaHref: "/universities",
   },
   {
     id: "students",
-    numberValue: 5000,
+    numberValue: 10000,
     suffix: "+",
-    label: "International Students Placed",
+    label: "INTERNATIONAL STUDENTS SUPPORTED",
     secondaryLabel: "Students from 50+ Global Nations",
-    tag: "50+ Countries Represented",
+    tag: "50+ COUNTRIES REPRESENTED",
     tagColor: "bg-teal-50 text-teal-800 border-teal-200/80",
     trend: "+28% Intake Growth (2026)",
     description:
-      "A thriving, vibrant community of foreign students from South Asia, Africa, Middle East, and Southeast Asia studying across premier Indian university campuses.",
+      "A Diverse International Student Community from South Asia, Africa, the Middle East, Southeast Asia and Beyond, Studying Across India’s Leading University Campuses.",
+    highlightsTitle: "INTERNATIONAL STUDENT EXPERIENCE",
     keyPoints: [
-      "Nepali students enjoy complete visa exemption under the 1950 Indo-Nepal Treaty",
-      "Fast-track Student e-Visa support for all international students worldwide",
-      "24/7 International Relations Office (IRO) and foreign student welfare buddy networks",
-      "On-campus international dining halls catering to diverse multi-cultural cuisines",
+      "Visa-Free Entry for Eligible Nepalese & Bhutanese Nationals Under Applicable Bilateral Arrangements",
+      "Student Visa & e-Visa Assistance for Eligible International Applicants",
+      "International Relations Office (IRO) & Dedicated Student Support Team",
+      "Multicultural Campus Environment with Diverse Dining & Accommodation Facilities",
     ],
-    accreditationNote: "Bilateral Treaty Support • International Student Welfare",
+    accreditationNote:
+      "VISA ASSISTANCE • GLOBAL STUDENT SUPPORT • MULTICULTURAL CAMPUS EXPERIENCE",
     ctaText: "View Student Testimonials",
     ctaHref: "/about",
   },
@@ -148,19 +158,21 @@ const flagshipMetrics: MetricDetail[] = [
     decimals: 1,
     suffix: "%",
     label: "Admission Success Rate",
-    secondaryLabel: "Pre-Screened Academic Credentials & Equivalence",
-    tag: "Equivalence Guaranteed",
+    secondaryLabel: "PRE-SCREENED DOCUMENTATION & QUALIFICATION REVIEW",
+    tag: "ACADEMIC CREDENTIALS VERIFIED",
     tagColor: "bg-emerald-50 text-emerald-800 border-emerald-200/80",
     trend: "Zero Application Rejection",
     description:
-      "Every applicant's academic dossier is carefully reviewed by our admissions team for document verification, qualification equivalence, and compliance with applicable university and regulatory requirements.",
+      "Every Applicant’s Academic Documents Are Carefully Reviewed by Our Admissions Team for Document Verification, Qualification Equivalence Requirements and Compliance with Applicable University & Regulatory Standards.",
+    highlightsTitle: "ACADEMIC & ADMISSION VERIFICATION",
     keyPoints: [
-      "Pre-verified against AICTE, NMC, PCI, BCI, and INC professional regulatory norms",
-      "Official provisional admission letters issued directly on university letterhead",
-      "Full documentation assistance for Ministry of Education (MoEST) No Objection Certificates",
-      "Transparent refund regulations strictly aligned with UGC international guidelines",
+      "Academic Document Screening as per Applicable UGC, AICTE, NMC, PCI, BCI & INC Regulations",
+      "Official Provisional Admission Letters Issued by Respective Universities",
+      "Documentation Assistance for Ministry of Education (MoEST) No Objection Certificates, Where Applicable",
+      "Transparent Refund Policies as per Applicable University Rules & Regulations",
     ],
-    accreditationNote: "Council Guidelines Compliance • Direct Dean Clearance",
+    accreditationNote:
+      "DOCUMENT VERIFICATION • REGULATORY COMPLIANCE • UNIVERSITY ADMISSION SUPPORT",
     ctaText: "Verify Your Eligibility",
     ctaHref: "/admission-process",
   },
@@ -416,7 +428,7 @@ export function HeroStatsSection() {
 
   // Counter hooks for the 4 flagship metrics
   const c1 = useSmoothCounter(300, 2000, 0);
-  const c2 = useSmoothCounter(5000, 2200, 0);
+  const c2 = useSmoothCounter(10000, 2200, 0);
   const c3 = useSmoothCounter(98.4, 2000, 1);
   const c4 = useSmoothCounter(500, 1800, 0);
 
@@ -447,11 +459,11 @@ export function HeroStatsSection() {
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600" />
               </span>
               <span className="text-[11px] font-black tracking-widest uppercase text-emerald-800 font-heading">
-                Audited Institutional Impact
+                Verified Institutional Network
               </span>
               <span className="text-emerald-300">•</span>
               <span className="text-[11px] font-bold text-emerald-700">
-                2026–2027 Admissions Active
+                Admission Open for 2027–28
               </span>
             </div>
 
@@ -574,10 +586,10 @@ export function HeroStatsSection() {
                   </div>
 
                   <h3 className="text-base font-extrabold text-slate-800 font-heading tracking-tight mt-2 leading-snug group-hover:text-emerald-700 transition-colors">
-                    Accredited Universities &amp; Institutions
+                    Universities &amp; Institutions
                   </h3>
                   <p className="text-xs text-slate-500 font-medium leading-relaxed mt-1.5">
-                    NIRF Top-100 & NAAC A++ institutions welcoming international students.
+                    NIRF Ranked &amp; NAAC Accredited Institutions welcoming international students.
                   </p>
                 </div>
 
@@ -647,10 +659,10 @@ export function HeroStatsSection() {
                   </div>
 
                   <h3 className="text-base font-extrabold text-slate-800 font-heading tracking-tight mt-2 leading-snug group-hover:text-teal-700 transition-colors">
-                    Global Students Placed
+                    International Students Supported
                   </h3>
                   <p className="text-xs text-slate-500 font-medium leading-relaxed mt-1.5">
-                    Active international students enrolled across premier Indian faculties.
+                    Students from 50+ global nations studying across leading Indian university campuses.
                   </p>
                 </div>
 
@@ -842,19 +854,19 @@ export function HeroStatsSection() {
 
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <h4 className="text-base sm:text-lg font-extrabold text-slate-900 font-heading tracking-tight">
-                        International Student Admissions Across 50+ Countries
+                      <h4 className="text-base sm:text-lg font-extrabold text-slate-900 font-heading tracking-tight uppercase">
+                        International Admissions From 50+ Countries
                       </h4>
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-[10.5px] font-bold text-emerald-800 shadow-2xs">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-[10.5px] font-bold text-emerald-800 uppercase tracking-wide shadow-2xs">
                         <span className="relative flex h-1.5 w-1.5">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                           <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
                         </span>
-                        Active Global Intake 2026–27
+                        Global Admission Intake 2027–28
                       </span>
                     </div>
                     <p className="text-xs sm:text-[13px] text-slate-500 font-medium mt-1 leading-relaxed">
-                      Enjoy bilateral treaty privileges for Nepal and Bhutan alongside fast-track electronic student visas and transparent tuition rates worldwide.
+                      Welcoming Students from Across the World to India’s Leading Universities, with Dedicated Admission, Visa &amp; Documentation Assistance, Applicable Bilateral Treaty Benefits for Eligible Nepalese &amp; Bhutanese Nationals, and Transparent University Fee Structures.
                     </p>
                   </div>
                 </div>
@@ -950,6 +962,14 @@ export function HeroStatsSection() {
                     ))}
                   </div>
                 </div>
+              </div>
+
+              {/* Footer Tagline Strip */}
+              <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-center sm:justify-start gap-2 text-[11px] font-bold uppercase tracking-widest text-emerald-800">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>
+                  Global Education • Simplified Admissions • International Student Support
+                </span>
               </div>
             </div>
           </div>
@@ -1333,23 +1353,25 @@ export function HeroStatsSection() {
           >
             {/* Header */}
             <div className="flex items-start justify-between gap-4 pb-4 border-b border-slate-100">
-              <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200/90 flex items-center justify-center shrink-0 text-emerald-700">
+              <div className="flex items-start gap-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200/90 flex items-center justify-center shrink-0 text-emerald-700 mt-0.5">
                   <Sparkles className="w-6 h-6" />
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
+                <div className="space-y-1.5">
+                  <div className="flex flex-wrap items-baseline gap-2">
                     <span className="text-2xl font-black text-slate-900 font-heading">
-                      {selectedMetric.numberValue}
+                      {selectedMetric.numberValue.toLocaleString("en-US")}
                       {selectedMetric.suffix}
                     </span>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${selectedMetric.tagColor}`}>
+                    <h3 className="text-base sm:text-lg font-extrabold text-slate-900 font-heading">
+                      {selectedMetric.label}
+                    </h3>
+                  </div>
+                  <div>
+                    <span className={`inline-block text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-full border leading-snug ${selectedMetric.tagColor}`}>
                       {selectedMetric.tag}
                     </span>
                   </div>
-                  <h3 className="text-base font-bold text-slate-800 font-heading">
-                    {selectedMetric.label}
-                  </h3>
                 </div>
               </div>
               <button
@@ -1364,9 +1386,9 @@ export function HeroStatsSection() {
 
             {/* Modal Body */}
             <div className="py-5 space-y-4">
-              <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 text-xs text-emerald-950 space-y-1">
+              <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 text-xs text-emerald-950 space-y-1.5">
                 <div className="font-bold text-emerald-900 flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                  <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0" />
                   <span>{selectedMetric.secondaryLabel}</span>
                 </div>
                 <p className="text-emerald-800/90 leading-relaxed">
@@ -1374,9 +1396,9 @@ export function HeroStatsSection() {
                 </p>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                  Audited Operational Details
+                  {selectedMetric.highlightsTitle || "ACADEMIC & CAMPUS HIGHLIGHTS"}
                 </h5>
                 <ul className="space-y-2 text-xs text-slate-600">
                   {selectedMetric.keyPoints.map((point, idx) => (
@@ -1390,7 +1412,7 @@ export function HeroStatsSection() {
                 </ul>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-[11.5px] text-slate-600 flex items-center gap-2">
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] font-semibold text-slate-700 flex items-center gap-2">
                 <Award className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>{selectedMetric.accreditationNote}</span>
               </div>

@@ -188,91 +188,91 @@ export default function HomePage() {
               <div className="pt-2">
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5 max-w-2xl">
                   {/* Card 1 */}
-                  <div className="group flex items-center gap-2 sm:gap-2.5 p-2.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_2px_8px_-3px_rgba(15,23,42,0.05)] hover:shadow-xs transition-all duration-200">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600 shrink-0 group-hover:from-emerald-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-200">
+                  <div className="group flex items-start sm:items-center gap-2 sm:gap-2.5 p-2.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_2px_8px_-3px_rgba(15,23,42,0.05)] hover:shadow-xs transition-all duration-200">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600 shrink-0 group-hover:from-emerald-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-200 mt-0.5 sm:mt-0">
                       <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[11px] sm:text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
+                      <p className="text-[11px] sm:text-[11.5px] font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-snug">
                         UGC Recognized
                       </p>
-                      <p className="text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
+                      <p className="text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-snug mt-0.5">
                         NAAC A++ Accreditation
                       </p>
                     </div>
                   </div>
 
                   {/* Card 2 */}
-                  <div className="group flex items-center gap-2 sm:gap-2.5 p-2.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_2px_8px_-3px_rgba(15,23,42,0.05)] hover:shadow-xs transition-all duration-200">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600 shrink-0 group-hover:from-emerald-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-200">
+                  <div className="group flex items-start sm:items-center gap-2 sm:gap-2.5 p-2.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_2px_8px_-3px_rgba(15,23,42,0.05)] hover:shadow-xs transition-all duration-200">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600 shrink-0 group-hover:from-emerald-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-200 mt-0.5 sm:mt-0">
                       <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[11px] sm:text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
-                        Globally Valid Degrees
+                      <p className="text-[11px] sm:text-[11.5px] font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-snug">
+                        Globally Recognised Education
                       </p>
-                      <p className="text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
-                        Accepted Worldwide
+                      <p className="text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-snug mt-0.5">
+                        International Education Opportunities
                       </p>
                     </div>
                   </div>
 
                   {/* Card 3 */}
-                  <div className="group flex items-center gap-2 sm:gap-2.5 p-2.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_2px_8px_-3px_rgba(15,23,42,0.05)] hover:shadow-xs transition-all duration-200">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600 shrink-0 group-hover:from-emerald-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-200">
+                  <div className="group flex items-start sm:items-center gap-2 sm:gap-2.5 p-2.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_2px_8px_-3px_rgba(15,23,42,0.05)] hover:shadow-xs transition-all duration-200">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600 shrink-0 group-hover:from-emerald-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-200 mt-0.5 sm:mt-0">
                       <FileCheck2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[11px] sm:text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
-                        Easy Visa Support
+                      <p className="text-[11px] sm:text-[11.5px] font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-snug">
+                        Student Visa Assistance
                       </p>
-                      <p className="text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
-                        Step-by-Step Guidance
+                      <p className="text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-snug mt-0.5">
+                        Complete Admission Guidance
                       </p>
                     </div>
                   </div>
 
                   {/* Card 4 */}
-                  <div className="group flex items-center gap-2 sm:gap-2.5 p-2.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_2px_8px_-3px_rgba(15,23,42,0.05)] hover:shadow-xs transition-all duration-200">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600 shrink-0 group-hover:from-emerald-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-200">
+                  <div className="group flex items-start sm:items-center gap-2 sm:gap-2.5 p-2.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_2px_8px_-3px_rgba(15,23,42,0.05)] hover:shadow-xs transition-all duration-200">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600 shrink-0 group-hover:from-emerald-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-200 mt-0.5 sm:mt-0">
                       <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[11px] sm:text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
-                        Clear Tuition Fees
+                      <p className="text-[11px] sm:text-[11.5px] font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-snug">
+                        Transparent Fee Structure
                       </p>
-                      <p className="text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
-                        No Hidden Charges
+                      <p className="text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-snug mt-0.5">
+                        No Hidden Admission Costs
                       </p>
                     </div>
                   </div>
 
                   {/* Card 5 */}
-                  <div className="group flex items-center gap-2 sm:gap-2.5 p-2.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_2px_8px_-3px_rgba(15,23,42,0.05)] hover:shadow-xs transition-all duration-200">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600 shrink-0 group-hover:from-emerald-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-200">
+                  <div className="group flex items-start sm:items-center gap-2 sm:gap-2.5 p-2.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_2px_8px_-3px_rgba(15,23,42,0.05)] hover:shadow-xs transition-all duration-200">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600 shrink-0 group-hover:from-emerald-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-200 mt-0.5 sm:mt-0">
                       <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[11px] sm:text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
-                        Fast Offer Letters
+                      <p className="text-[11px] sm:text-[11.5px] font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-snug">
+                        Quick Admission Processing
                       </p>
-                      <p className="text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
-                        In 7–10 Working Days
+                      <p className="text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-snug mt-0.5">
+                        Admission Updates Within 10–15 Working Days
                       </p>
                     </div>
                   </div>
 
                   {/* Card 6 */}
-                  <div className="group flex items-center gap-2 sm:gap-2.5 p-2.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_2px_8px_-3px_rgba(15,23,42,0.05)] hover:shadow-xs transition-all duration-200">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600 shrink-0 group-hover:from-emerald-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-200">
+                  <div className="group flex items-start sm:items-center gap-2 sm:gap-2.5 p-2.5 rounded-xl bg-white/95 hover:bg-white border border-slate-200/90 hover:border-emerald-300 shadow-[0_2px_8px_-3px_rgba(15,23,42,0.05)] hover:shadow-xs transition-all duration-200">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 flex items-center justify-center text-emerald-600 shrink-0 group-hover:from-emerald-600 group-hover:to-teal-600 group-hover:text-white transition-all duration-200 mt-0.5 sm:mt-0">
                       <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[11px] sm:text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-tight">
-                        50+ Countries
+                      <p className="text-[11px] sm:text-[11.5px] font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-snug">
+                        Students from 50+ Countries
                       </p>
-                      <p className="text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-tight mt-0.5">
-                        10,000+ Students Helped
+                      <p className="text-[9.5px] sm:text-[10.5px] text-slate-500 font-medium leading-snug mt-0.5">
+                        10,000+ Student Enquiries &amp; Assistance
                       </p>
                     </div>
                   </div>
@@ -399,7 +399,7 @@ export default function HomePage() {
                   <div className="flex flex-col pr-1">
                     <div className="flex items-center gap-2">
                       <span className="text-lg sm:text-xl font-black text-slate-900 font-heading tracking-tight leading-none">
-                        5,000+
+                        10,000+
                       </span>
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/70 shadow-xs">
                         <Sparkles className="w-2.5 h-2.5 text-emerald-600" />
@@ -431,36 +431,36 @@ export default function HomePage() {
       {/* ════════════════════════════════════════════════════════════
           QUICK COURSE SEARCH
         ════════════════════════════════════════════════════════════ */}
-      <section className="py-14 bg-slate-50">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-bold text-slate-900 font-heading">
-              Find Your Course
+      <section className="py-10 bg-slate-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-5 space-y-1">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight font-heading uppercase">
+              Find Your Programme
             </h2>
-            <p className="text-sm text-slate-400 mt-1">
-              Search by degree name, university, or academic discipline
+            <p className="text-xs sm:text-sm text-slate-500 font-medium">
+              Explore Academic Programmes Across India’s Leading Universities.
             </p>
           </div>
           <form
             onSubmit={handleSearchSubmit}
-            className="flex flex-col sm:flex-row items-stretch gap-3 bg-white rounded-2xl p-3 border border-slate-200 shadow-sm"
+            className="flex flex-col sm:flex-row items-stretch gap-2.5 bg-white rounded-2xl p-2.5 border border-slate-200/90 shadow-xs"
           >
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-slate-300 absolute left-3.5 top-3.5 pointer-events-none" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 pointer-events-none" />
               <input
                 id="hero-course-search"
                 type="text"
-                placeholder="e.g. B.Tech CSE, MBBS, VIT, Manipal..."
+                placeholder="Search by Course, University or Academic Discipline"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full h-11 pl-10 pr-4 rounded-xl bg-slate-50 text-sm text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:bg-white transition-all"
+                className="w-full h-11 pl-10 pr-4 rounded-xl bg-slate-50 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:bg-white transition-all"
               />
             </div>
             <select
               id="hero-discipline-select"
               value={selectedStream}
               onChange={(e) => setSelectedStream(e.target.value)}
-              className="h-11 px-3.5 rounded-xl bg-slate-50 text-sm text-slate-700 border-none focus:outline-none focus:ring-2 focus:ring-emerald-500/40 cursor-pointer"
+              className="h-11 px-3.5 rounded-xl bg-slate-50 text-sm text-slate-700 border-none focus:outline-none focus:ring-2 focus:ring-emerald-500/40 cursor-pointer shrink-0"
             >
               <option value="all">All Disciplines</option>
               <option value="Engineering & Technology">Engineering</option>
@@ -474,9 +474,9 @@ export default function HomePage() {
             </select>
             <Button
               type="submit"
-              className="h-11 px-6 font-semibold text-sm bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl cursor-pointer"
+              className="h-11 px-5 font-semibold text-sm bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl cursor-pointer shrink-0"
             >
-              Search
+              Search Programmes
               <ArrowRight className="w-4 h-4 ml-1.5" />
             </Button>
           </form>
@@ -655,7 +655,7 @@ export default function HomePage() {
                 Ready to Apply?
               </h3>
               <p className="text-slate-400 text-sm leading-relaxed mb-6 relative z-10">
-                Join 5,000+ international students from South Asia, Africa, the
+                Join 10,000+ international students from South Asia, Africa, the
                 Middle East, and Southeast Asia already enrolled in top Indian
                 universities.
               </p>
