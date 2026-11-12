@@ -1128,8 +1128,11 @@ export function HeroStatsSection() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 animate-in fade-in duration-300">
             <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs flex flex-col justify-between space-y-4">
               <div className="space-y-3">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-700">
-                  <Landmark className="w-5 h-5" />
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-b from-emerald-300 via-emerald-500 to-teal-900 p-[1.5px] shadow-[0_8px_18px_-4px_rgba(16,185,129,0.5)]">
+                  <div className="relative w-full h-full rounded-[14px] bg-gradient-to-b from-[#10b981] via-[#059669] to-[#064e3b] flex items-center justify-center overflow-hidden shadow-[inset_0_2px_3px_rgba(255,255,255,0.75),inset_0_-3px_4px_rgba(0,0,0,0.4)]">
+                    <div className="absolute inset-x-0 top-0 h-[46%] bg-gradient-to-b from-white/55 via-white/15 to-transparent pointer-events-none rounded-t-[14px]" />
+                    <Landmark className="w-5 h-5 text-white relative z-10 drop-shadow-[0_2px_3px_rgba(0,0,0,0.35)]" />
+                  </div>
                 </div>
                 <h4 className="text-sm font-bold text-slate-900 font-heading tracking-wide uppercase">
                   UGC Recognised Universities
@@ -1145,8 +1148,11 @@ export function HeroStatsSection() {
 
             <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs flex flex-col justify-between space-y-4">
               <div className="space-y-3">
-                <div className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-200/80 flex items-center justify-center text-teal-700">
-                  <ShieldCheck className="w-5 h-5" />
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-b from-teal-300 via-teal-500 to-cyan-900 p-[1.5px] shadow-[0_8px_18px_-4px_rgba(20,184,166,0.5)]">
+                  <div className="relative w-full h-full rounded-[14px] bg-gradient-to-b from-[#14b8a6] via-[#0d9488] to-[#134e4a] flex items-center justify-center overflow-hidden shadow-[inset_0_2px_3px_rgba(255,255,255,0.75),inset_0_-3px_4px_rgba(0,0,0,0.4)]">
+                    <div className="absolute inset-x-0 top-0 h-[46%] bg-gradient-to-b from-white/55 via-white/15 to-transparent pointer-events-none rounded-t-[14px]" />
+                    <ShieldCheck className="w-5 h-5 text-white relative z-10 drop-shadow-[0_2px_3px_rgba(0,0,0,0.35)]" />
+                  </div>
                 </div>
                 <h4 className="text-sm font-bold text-slate-900 font-heading tracking-wide uppercase">
                   AICTE Approved
@@ -1162,8 +1168,11 @@ export function HeroStatsSection() {
 
             <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs flex flex-col justify-between space-y-4">
               <div className="space-y-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200/80 flex items-center justify-center text-amber-700">
-                  <Award className="w-5 h-5" />
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-b from-amber-300 via-amber-500 to-amber-900 p-[1.5px] shadow-[0_8px_18px_-4px_rgba(245,158,11,0.5)]">
+                  <div className="relative w-full h-full rounded-[14px] bg-gradient-to-b from-[#f59e0b] via-[#d97706] to-[#78350f] flex items-center justify-center overflow-hidden shadow-[inset_0_2px_3px_rgba(255,255,255,0.75),inset_0_-3px_4px_rgba(0,0,0,0.4)]">
+                    <div className="absolute inset-x-0 top-0 h-[46%] bg-gradient-to-b from-white/55 via-white/15 to-transparent pointer-events-none rounded-t-[14px]" />
+                    <Award className="w-5 h-5 text-white relative z-10 drop-shadow-[0_2px_3px_rgba(0,0,0,0.35)]" />
+                  </div>
                 </div>
                 <h4 className="text-sm font-bold text-slate-900 font-heading tracking-wide uppercase">
                   NAAC A++ Accredited
@@ -1179,49 +1188,138 @@ export function HeroStatsSection() {
           </div>
         )}
 
-        {/* ── Bottom Institutional Trust Strip ── */}
-        <div className="relative overflow-hidden rounded-2xl bg-white border border-slate-200/90 p-5 sm:px-6 sm:py-5 shadow-[0_4px_24px_-6px_rgba(15,23,42,0.05)] flex flex-col gap-4">
-          {/* Subtle left emerald accent bar */}
-          <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-500 to-teal-600" />
+        {/* ── Bottom Institutional Trust Strip (Compact 5-Column Bento with 3D Icons) ── */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-white via-white to-slate-50/70 border border-slate-200/90 p-4 sm:px-5 sm:py-4 shadow-[0_8px_30px_-8px_rgba(15,23,42,0.06)] space-y-3.5">
+          {/* Left 3D Luminous Accent Bar */}
+          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-emerald-400 via-emerald-600 to-teal-700" />
 
-          <div className="flex items-start sm:items-center gap-3.5 pl-1">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-xs shrink-0 mt-0.5 sm:mt-0">
-              <ShieldCheck className="w-5 h-5" />
+          {/* Top Row: Left Identity + Right Statutory Summary Pill (Zero Empty Gap) */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pl-1.5">
+            <div className="flex items-center gap-3">
+              {/* 3D Beveled Emerald Glass Shield Icon */}
+              <div className="relative shrink-0 group">
+                <div className="absolute -inset-1 rounded-2xl bg-gradient-to-tr from-emerald-400/45 via-teal-300/35 to-emerald-500/45 blur-xs pointer-events-none" />
+                <div className="relative w-11 h-11 rounded-xl bg-gradient-to-b from-emerald-300 via-emerald-500 to-teal-900 p-[1.5px] shadow-[0_8px_18px_-4px_rgba(16,185,129,0.55),0_2px_6px_rgba(6,78,59,0.3)]">
+                  <div className="relative w-full h-full rounded-[10px] bg-gradient-to-b from-[#10b981] via-[#059669] to-[#064e3b] flex items-center justify-center overflow-hidden shadow-[inset_0_2px_3px_rgba(255,255,255,0.75),inset_0_-3px_4px_rgba(0,0,0,0.4)]">
+                    {/* Upper Specular Glass Highlight */}
+                    <div className="absolute inset-x-0 top-0 h-[46%] bg-gradient-to-b from-white/55 via-white/15 to-transparent pointer-events-none rounded-t-[10px]" />
+                    <ShieldCheck className="w-5.5 h-5.5 text-white relative z-10 drop-shadow-[0_2px_3px_rgba(0,0,0,0.35)]" />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/90 text-[10px] font-bold text-emerald-800 uppercase tracking-wider shadow-2xs">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Official Recognition &amp; Accreditation
+                  </span>
+                  <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-bold text-slate-800 font-heading uppercase tracking-wide">
+                    • Recognised &amp; Quality-Assessed Institutions
+                  </span>
+                </div>
+                <h4 className="sm:hidden text-xs font-extrabold text-slate-900 font-heading tracking-wide uppercase mt-1">
+                  Recognised &amp; Quality-Assessed Institutions
+                </h4>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  University Recognition, Institutional Accreditation &amp; Regulatory Approvals as Applicable.
+                </p>
+              </div>
             </div>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-[10px] font-bold text-emerald-800 uppercase tracking-wider">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Official Recognition &amp; Accreditation
+
+            {/* Right Statutory Seal (Eliminates top-right whitespace) */}
+            <div className="flex items-center gap-2 self-start lg:self-center bg-slate-50/90 border border-slate-200/80 rounded-xl px-3 py-2 shrink-0">
+              <div className="w-6 h-6 rounded-lg bg-gradient-to-b from-emerald-400 to-teal-700 text-white flex items-center justify-center shadow-[0_3px_8px_-2px_rgba(16,185,129,0.5),inset_0_1px_1px_rgba(255,255,255,0.6)] shrink-0">
+                <Check className="w-3.5 h-3.5 stroke-[3] drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]" />
+              </div>
+              <div className="text-[11px] leading-tight">
+                <span className="font-bold text-slate-800 block">
+                  100% Statutory Compliance
+                </span>
+                <span className="text-slate-500 text-[10px]">
+                  Verified Global Degree Equivalence
                 </span>
               </div>
-              <h4 className="text-xs sm:text-sm font-extrabold text-slate-900 font-heading tracking-wide uppercase mt-1.5">
-                Recognised &amp; Quality-Assessed Institutions
-              </h4>
-              <p className="text-[11.5px] text-slate-500 font-medium mt-0.5">
-                University Recognition, Institutional Accreditation &amp; Regulatory Approvals as Applicable.
-              </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 pl-1 pt-1 border-t border-slate-100">
+          {/* Bottom Row: 5-Column Full-Width Bento Grid (Zero Leftover Row Gap!) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 pl-1.5 pt-2.5 border-t border-slate-100">
             {[
-              "UGC Recognised Universities",
-              "NAAC Accredited Institutions (A++ Grade Where Applicable)",
-              "AICTE Approved Programmes (Where Applicable)",
-              "AIU Member Universities",
-              "NIRF Ranked Institutions",
-            ].map((badge) => (
-              <span
-                key={badge}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-gradient-to-r hover:from-emerald-50/90 hover:to-teal-50/60 border border-slate-200/80 hover:border-emerald-300/80 text-[11.5px] font-semibold text-slate-700 hover:text-emerald-950 shadow-2xs transition-all duration-200"
-              >
-                <span className="w-4 h-4 rounded-full bg-emerald-100/90 text-emerald-700 flex items-center justify-center shrink-0">
-                  <Check className="w-2.5 h-2.5 stroke-[3]" />
-                </span>
-                {badge}
-              </span>
-            ))}
+              {
+                title: "UGC Recognised Universities",
+                sub: "Under UGC Act, 1956",
+                icon: Landmark,
+                bevelBg: "from-emerald-300 via-emerald-500 to-teal-900",
+                coreBg: "from-[#10b981] via-[#059669] to-[#064e3b]",
+                glow: "rgba(16,185,129,0.45)",
+              },
+              {
+                title: "NAAC Accredited Institutions",
+                sub: "A++ Grade Where Applicable",
+                icon: Award,
+                bevelBg: "from-amber-300 via-amber-500 to-amber-900",
+                coreBg: "from-[#f59e0b] via-[#d97706] to-[#78350f]",
+                glow: "rgba(245,158,11,0.45)",
+              },
+              {
+                title: "AICTE Approved Programmes",
+                sub: "Technical Norms Where Applicable",
+                icon: ShieldCheck,
+                bevelBg: "from-teal-300 via-teal-500 to-cyan-900",
+                coreBg: "from-[#14b8a6] via-[#0d9488] to-[#134e4a]",
+                glow: "rgba(20,184,166,0.45)",
+              },
+              {
+                title: "AIU Member Universities",
+                sub: "Global Degree Equivalence",
+                icon: Globe2,
+                bevelBg: "from-sky-300 via-blue-500 to-indigo-900",
+                coreBg: "from-[#0ea5e9] via-[#0284c7] to-[#1e3a8a]",
+                glow: "rgba(14,165,233,0.45)",
+              },
+              {
+                title: "NIRF Ranked Institutions",
+                sub: "Ministry of Education India",
+                icon: Sparkles,
+                bevelBg: "from-emerald-300 via-teal-500 to-emerald-900",
+                coreBg: "from-[#10b981] via-[#0d9488] to-[#064e3b]",
+                glow: "rgba(16,185,129,0.45)",
+              },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <div
+                  key={item.title}
+                  className="group flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50/80 hover:bg-white border border-slate-200/80 hover:border-emerald-300 shadow-[0_1px_3px_rgba(15,23,42,0.03)] hover:shadow-[0_8px_20px_-6px_rgba(16,185,129,0.15)] transition-all duration-200 hover:-translate-y-0.5"
+                >
+                  {/* 3D Beveled Glossy Jewel Icon Pod */}
+                  <div
+                    className={`w-8 h-8 rounded-lg bg-gradient-to-b ${item.bevelBg} p-[1px] shrink-0 transition-transform duration-200 group-hover:scale-105`}
+                    style={{
+                      boxShadow: `0 6px 14px -3px ${item.glow}, 0 2px 4px rgba(15,23,42,0.2)`,
+                    }}
+                  >
+                    <div
+                      className={`relative w-full h-full rounded-[7px] bg-gradient-to-b ${item.coreBg} flex items-center justify-center overflow-hidden shadow-[inset_0_1.5px_2px_rgba(255,255,255,0.75),inset_0_-2px_3px_rgba(0,0,0,0.4)]`}
+                    >
+                      {/* Top Curved 3D Specular Reflection */}
+                      <div className="absolute inset-x-0 top-0 h-[48%] bg-gradient-to-b from-white/55 via-white/15 to-transparent pointer-events-none rounded-t-[7px]" />
+                      <Icon className="w-4 h-4 text-white relative z-10 drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.35)]" />
+                    </div>
+                  </div>
+
+                  <div className="min-w-0">
+                    <span className="text-[11.5px] font-bold text-slate-900 group-hover:text-emerald-800 transition-colors block leading-tight">
+                      {item.title}
+                    </span>
+                    <span className="text-[10px] font-medium text-slate-500 block leading-tight mt-0.5 truncate">
+                      {item.sub}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
