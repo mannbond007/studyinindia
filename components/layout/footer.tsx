@@ -676,32 +676,68 @@ function FooterContent() {
         {/* ════════════════════════════════════════════════════════════════
             3. REGULATORY ACCREDITATION & TRUST STRIP
            ════════════════════════════════════════════════════════════════ */}
-        <div className="py-4 px-6 rounded-2xl bg-slate-800/60 border border-slate-800 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-400">
-          <div className="flex items-center gap-2 text-slate-300 font-semibold">
-            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>Accredited Academic &amp; Immigration Standards:</span>
+        <div className="rounded-2xl bg-gradient-to-b from-slate-800/70 to-slate-900/90 border border-slate-800/90 p-5 sm:p-6 shadow-[0_12px_30px_-10px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.05)] space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 shadow-[inset_0_1px_0_rgba(167,243,208,0.2)]">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div>
+                <h5 className="text-xs sm:text-sm font-bold text-white tracking-tight font-heading">
+                  Accredited Academic &amp; Immigration Standards
+                </h5>
+                <p className="text-[11px] text-slate-400">
+                  Institutional Recognition, Statutory Approvals &amp; International Student Compliance
+                </p>
+              </div>
+            </div>
+
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/90 border border-slate-700/80 text-[11px] font-semibold text-emerald-400 self-start sm:self-auto shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <span>100% Statutory Compliance</span>
+            </span>
           </div>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[11.5px]">
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>UGC Recognized Universities</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>AICTE Approved Programs</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>NAAC &apos;A&apos; Grade Institutions</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>AIU Equivalence Framework</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>MHA e-FRRO Compliant</span>
-            </span>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 pt-3.5 border-t border-slate-800/90">
+            {[
+              {
+                title: "UGC Recognized",
+                sub: "Under UGC Act, 1956",
+              },
+              {
+                title: "AICTE Approved",
+                sub: "Technical & Professional",
+              },
+              {
+                title: "NAAC Accredited",
+                sub: "Quality Assessed Campuses",
+              },
+              {
+                title: "AIU Equivalence",
+                sub: "Global Degree Validity",
+              },
+              {
+                title: "MHA e-FRRO Compliant",
+                sub: "Official Visa & Onboarding",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-slate-900/75 border border-slate-800/90 hover:border-emerald-500/35 transition-colors"
+              >
+                <div className="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center text-emerald-400 shrink-0">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-xs font-semibold text-slate-200 block truncate leading-tight">
+                    {item.title}
+                  </span>
+                  <span className="text-[10.5px] text-slate-400 block truncate mt-0.5">
+                    {item.sub}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 

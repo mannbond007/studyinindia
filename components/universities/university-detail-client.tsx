@@ -97,7 +97,7 @@ const NAV_SECTIONS = [
   { id: "campus-facilities", label: "Campus & Facilities" },
   { id: "placements", label: "Placements" },
   { id: "international-students", label: "International Students" },
-  { id: "admission-process", label: "Admission Process" },
+  { id: "document-checklist", label: "Document Checklist" },
   { id: "faqs", label: "FAQs" },
 ];
 
@@ -247,8 +247,14 @@ export function UniversityDetailClient({
   // Document Checklist State
   const [checkedDocs, setCheckedDocs] = useState<string[]>(["doc-10", "doc-12", "doc-id"]);
 
-  // FAQ Accordion State
-  const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(0);
+  // FAQ Accordion State (independent toggle prevents page-scroll jump when opening lower items)
+  const [openFaqIndices, setOpenFaqIndices] = useState<number[]>([0]);
+
+  const toggleFaq = (idx: number) => {
+    setOpenFaqIndices((prev) =>
+      prev.includes(idx) ? prev.filter((item) => item !== idx) : [...prev, idx]
+    );
+  };
 
   // Callback Modal / Enquiry State
   const [callbackModalOpen, setCallbackModalOpen] = useState<boolean>(false);
@@ -1409,26 +1415,34 @@ export function UniversityDetailClient({
                     , offering structured undergraduate, postgraduate, and doctoral pathways.
                   </p>
 
-                  {aboutExpanded && (
-                    <div className="space-y-3 pt-2 border-t border-slate-100">
-                      <div>
-                        <h3 className="text-sm font-bold text-[#111827]">
-                          Academic Environment &amp; Teaching Methodology
-                        </h3>
-                        <p className="text-xs sm:text-sm text-[#475569] mt-1">
-                          Programmes follow the University Grants Commission (UGC) Choice Based Credit System (CBCS) and Outcome-Based Education (OBE) curriculum. Instruction is delivered entirely in English through a combination of theory lectures, laboratory practicums, industry case studies, and mandatory final-year projects or clinical rotations.
-                        </p>
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-bold text-[#111827]">
-                          Campus Environment &amp; International Integration
-                        </h3>
-                        <p className="text-xs sm:text-sm text-[#475569] mt-1">
-                          The residential campus provides a secure, multicultural academic environment with dedicated international student advisors, equivalence documentation support for SAARC boards (including NEB Nepal), and structured career readiness training.
-                        </p>
+                  <div
+                    className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
+                      aboutExpanded
+                        ? "grid-rows-[1fr] opacity-100"
+                        : "grid-rows-[0fr] opacity-0"
+                    }`}
+                  >
+                    <div className="overflow-hidden">
+                      <div className="space-y-3 pt-3 border-t border-slate-100">
+                        <div>
+                          <h3 className="text-sm font-bold text-[#111827]">
+                            Academic Environment &amp; Teaching Methodology
+                          </h3>
+                          <p className="text-xs sm:text-sm text-[#475569] mt-1">
+                            Programmes follow the University Grants Commission (UGC) Choice Based Credit System (CBCS) and Outcome-Based Education (OBE) curriculum. Instruction is delivered entirely in English through a combination of theory lectures, laboratory practicums, industry case studies, and mandatory final-year projects or clinical rotations.
+                          </p>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-bold text-[#111827]">
+                            Campus Environment &amp; International Integration
+                          </h3>
+                          <p className="text-xs sm:text-sm text-[#475569] mt-1">
+                            The residential campus provides a secure, multicultural academic environment with dedicated international student advisors, equivalence documentation support for SAARC boards (including NEB Nepal), and structured career readiness training.
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  )}
+                  </div>
 
                   <button
                     type="button"
@@ -2873,9 +2887,9 @@ export function UniversityDetailClient({
                 </a>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
                 {/* Interactive Google Maps Embed (7 Cols) */}
-                <div className="md:col-span-7 rounded-xl overflow-hidden border border-[#E2E8F0] bg-slate-100 h-64 sm:h-72">
+                <div className="md:col-span-7 rounded-xl overflow-hidden border border-[#E2E8F0] bg-slate-100 h-80 sm:h-96 md:h-auto md:min-h-[450px]">
                   <iframe
                     title={`${university.name} Campus Location Map`}
                     src={`https://www.google.com/maps?q=${encodeURIComponent(
@@ -2935,166 +2949,93 @@ export function UniversityDetailClient({
             </section>
 
             {/* ────────────────────────────────────────────────────────────────
-                SECTION 13 & 14: ADMISSION PROCESS & DOCUMENT CHECKLIST (#admission-process)
+                SECTION 14: INTERACTIVE DOCUMENT CHECKLIST (#document-checklist)
                ──────────────────────────────────────────────────────────────── */}
             <section
-              id="admission-process"
-              className="scroll-mt-32 bg-white rounded-2xl border border-[#E2E8F0] shadow-2xs p-6 sm:p-8 space-y-8"
+              id="document-checklist"
+              className="scroll-mt-32 bg-white rounded-2xl border border-[#E2E8F0] shadow-2xs p-6 sm:p-8 space-y-5"
             >
-              <div className="border-b border-[#E2E8F0] pb-5">
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#007A59] bg-[#ECFDF5] border border-emerald-200 px-3 py-1 rounded-full mb-2">
-                  <FileCheck2 className="w-3.5 h-3.5" />
-                  Step-by-Step Admission Guide
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-[#111827] font-heading">
-                  7-Step International Admission Process &amp; Document Checklist
-                </h2>
-                <p className="text-xs sm:text-sm text-[#475569] mt-1">
-                  Transparent admission workflow from online form submission to campus arrival at {university.name}.
-                </p>
-              </div>
-
-              {/* 7-Step Timeline */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
-                {[
-                  {
-                    step: "01",
-                    title: "Submit Online Application",
-                    desc: "Complete your StudyIndia application form with preferred course.",
-                  },
-                  {
-                    step: "02",
-                    title: "Upload Documents",
-                    desc: "Upload Grade 10, Grade 12 / UG marksheets & Passport/ID scan.",
-                  },
-                  {
-                    step: "03",
-                    title: "Eligibility Verification",
-                    desc: "Admissions team verifies board equivalence & merit scholarship.",
-                  },
-                  {
-                    step: "04",
-                    title: "Provisional Offer Letter",
-                    desc: "Receive official University Offer Letter with scholarship breakdown.",
-                  },
-                  {
-                    step: "05",
-                    title: "Admission Formalities",
-                    desc: "Confirm seat registration directly via official university portal.",
-                  },
-                  {
-                    step: "06",
-                    title: "Visa / NOC Support",
-                    desc: "Obtain MoEST NOC (Nepal) or Student e-Visa with official letters.",
-                  },
-                  {
-                    step: "07",
-                    title: "Campus Onboarding",
-                    desc: "Arrive on campus, complete document verification & join classes.",
-                  },
-                ].map((item) => (
-                  <div
-                    key={item.step}
-                    className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3.5 flex flex-col justify-between space-y-2"
-                  >
-                    <span className="w-7 h-7 rounded-lg bg-[#009B70] text-white font-bold text-xs flex items-center justify-center">
-                      {item.step}
-                    </span>
-                    <div className="space-y-1">
-                      <h3 className="text-xs font-bold text-[#111827] leading-snug">
-                        {item.title}
-                      </h3>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
-                        {item.desc}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* SECTION 14: INTERACTIVE DOCUMENT CHECKLIST */}
-              <div
-                id="document-checklist"
-                className="pt-6 border-t border-[#E2E8F0] space-y-4"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <h3 className="text-base sm:text-lg font-bold text-[#111827] font-heading">
-                      Interactive Student Document Readiness Checklist
-                    </h3>
-                    <p className="text-xs text-slate-600">
-                      Check off the documents you currently have ready. (Self-assessment tool — official uploads happen in the application portal.)
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs font-semibold text-slate-600">
-                      Readiness:
-                    </span>
-                    <span className="px-3 py-1 rounded-full bg-[#ECFDF5] border border-emerald-200 text-[#007A59] font-bold text-xs">
-                      {docProgress}% Complete ({checkedDocs.length}/{DOCUMENT_CHECKLIST.length})
-                    </span>
-                  </div>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="w-full h-2.5 rounded-full bg-slate-100 overflow-hidden">
-                  <div
-                    className="h-full bg-[#009B70] transition-all duration-300"
-                    style={{ width: `${docProgress}%` }}
-                  />
-                </div>
-
-                {/* Checklist Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {DOCUMENT_CHECKLIST.map((doc) => {
-                    const checked = checkedDocs.includes(doc.id);
-                    return (
-                      <button
-                        key={doc.id}
-                        type="button"
-                        onClick={() => toggleDoc(doc.id)}
-                        className={`text-left p-3.5 rounded-xl border transition-all flex items-start gap-3 cursor-pointer ${
-                          checked
-                            ? "bg-[#ECFDF5]/60 border-[#009B70] text-[#111827]"
-                            : "bg-[#F8FAFC] border-[#E2E8F0] text-slate-600 hover:border-slate-300"
-                        }`}
-                      >
-                        {checked ? (
-                          <CheckSquare className="w-4 h-4 text-[#009B70] shrink-0 mt-0.5" />
-                        ) : (
-                          <Square className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
-                        )}
-                        <div className="space-y-0.5">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs sm:text-sm font-bold text-[#111827]">
-                              {doc.title}
-                            </span>
-                            {!doc.mandatory && (
-                              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-200/70 text-slate-600">
-                                If Applicable
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-xs text-slate-500 block">
-                            {doc.subtitle}
-                          </span>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="pt-2 flex flex-wrap items-center justify-between gap-3">
-                  <span className="text-xs text-slate-500">
-                    Note: Pending Grade 12 results or Migration Certificates can be submitted after provisional offer issuance.
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#E2E8F0] pb-5">
+                <div>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#007A59] bg-[#ECFDF5] border border-emerald-200 px-3 py-1 rounded-full mb-2">
+                    <FileCheck2 className="w-3.5 h-3.5" />
+                    Application Readiness
                   </span>
-                  <Link href={`/register?universityId=${university.id}`}>
-                    <Button className="h-10 px-5 rounded-xl bg-[#009B70] hover:bg-[#007A59] text-white font-semibold text-xs gap-1.5 cursor-pointer">
-                      <span>Proceed to Online Application</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </Button>
-                  </Link>
+                  <h2 className="text-xl sm:text-2xl font-bold text-[#111827] font-heading">
+                    Interactive Student Document Readiness Checklist
+                  </h2>
+                  <p className="text-xs sm:text-sm text-[#475569] mt-1">
+                    Check off the documents you currently have ready before starting your application.
+                  </p>
                 </div>
+                <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                  <span className="text-xs font-semibold text-slate-600">
+                    Readiness:
+                  </span>
+                  <span className="px-3 py-1 rounded-full bg-[#ECFDF5] border border-emerald-200 text-[#007A59] font-bold text-xs">
+                    {docProgress}% Complete ({checkedDocs.length}/{DOCUMENT_CHECKLIST.length})
+                  </span>
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="w-full h-2.5 rounded-full bg-slate-100 overflow-hidden">
+                <div
+                  className="h-full bg-[#009B70] transition-all duration-300"
+                  style={{ width: `${docProgress}%` }}
+                />
+              </div>
+
+              {/* Checklist Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {DOCUMENT_CHECKLIST.map((doc) => {
+                  const checked = checkedDocs.includes(doc.id);
+                  return (
+                    <button
+                      key={doc.id}
+                      type="button"
+                      onClick={() => toggleDoc(doc.id)}
+                      className={`text-left p-3.5 rounded-xl border transition-all flex items-start gap-3 cursor-pointer ${
+                        checked
+                          ? "bg-[#ECFDF5]/60 border-[#009B70] text-[#111827]"
+                          : "bg-[#F8FAFC] border-[#E2E8F0] text-slate-600 hover:border-slate-300"
+                      }`}
+                    >
+                      {checked ? (
+                        <CheckSquare className="w-4 h-4 text-[#009B70] shrink-0 mt-0.5" />
+                      ) : (
+                        <Square className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                      )}
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs sm:text-sm font-bold text-[#111827]">
+                            {doc.title}
+                          </span>
+                          {!doc.mandatory && (
+                            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-200/70 text-slate-600">
+                              If Applicable
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-slate-500 block">
+                          {doc.subtitle}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="pt-2 flex flex-wrap items-center justify-between gap-3">
+                <span className="text-xs text-slate-500">
+                  Note: Pending Grade 12 results or Migration Certificates can be submitted after provisional offer issuance.
+                </span>
+                <Link href={`/register?universityId=${university.id}`}>
+                  <Button className="h-10 px-5 rounded-xl bg-[#009B70] hover:bg-[#007A59] text-white font-semibold text-xs gap-1.5 cursor-pointer">
+                    <span>Proceed to Online Application</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </Link>
               </div>
             </section>
 
@@ -3105,51 +3046,102 @@ export function UniversityDetailClient({
               id="faqs"
               className="scroll-mt-32 bg-white rounded-2xl border border-[#E2E8F0] shadow-2xs p-6 sm:p-8 space-y-6"
             >
-              <div className="border-b border-[#E2E8F0] pb-5">
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#007A59] bg-[#ECFDF5] border border-emerald-200 px-3 py-1 rounded-full mb-2">
-                  <HelpCircle className="w-3.5 h-3.5" />
-                  Frequently Asked Questions
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-[#111827] font-heading">
-                  Verified Answers About {university.name}
-                </h2>
-                <p className="text-xs sm:text-sm text-[#475569] mt-1">
-                  Everything international students and parents ask about recognition, fees, scholarships, hostels, visas, and placements.
-                </p>
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#E2E8F0] pb-5">
+                <div>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#007A59] bg-[#ECFDF5] border border-emerald-200 px-3 py-1 rounded-full mb-2">
+                    <HelpCircle className="w-3.5 h-3.5" />
+                    Frequently Asked Questions
+                  </span>
+                  <h2 className="text-xl sm:text-2xl font-bold text-[#111827] font-heading">
+                    Verified Answers About {university.name}
+                  </h2>
+                  <p className="text-xs sm:text-sm text-[#475569] mt-1">
+                    Everything international students and parents ask about recognition, fees, scholarships, hostels, visas, and placements.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOpenFaqIndices(
+                      openFaqIndices.length === universityFaqs.length
+                        ? []
+                        : universityFaqs.map((_, i) => i)
+                    )
+                  }
+                  className="text-xs font-semibold text-[#009B70] hover:text-[#007A59] px-3 py-1.5 rounded-lg bg-[#F8FAFC] hover:bg-[#ECFDF5] border border-[#E2E8F0] transition-colors cursor-pointer self-start sm:self-auto shrink-0"
+                >
+                  {openFaqIndices.length === universityFaqs.length
+                    ? "Collapse All"
+                    : "Expand All"}
+                </button>
               </div>
 
-              <div className="divide-y divide-[#E2E8F0] border border-[#E2E8F0] rounded-xl overflow-hidden">
+              <div className="space-y-3">
                 {universityFaqs.map((faq, idx) => {
-                  const isOpen = openFaqIdx === idx;
+                  const isOpen = openFaqIndices.includes(idx);
                   return (
-                    <div key={idx} className="bg-white">
+                    <div
+                      key={idx}
+                      className={`rounded-xl border transition-colors duration-200 overflow-hidden ${
+                        isOpen
+                          ? "border-[#009B70]/50 bg-[#ECFDF5]/20 shadow-2xs"
+                          : "border-[#E2E8F0] bg-white hover:border-slate-300"
+                      }`}
+                    >
                       <button
                         type="button"
                         aria-expanded={isOpen}
-                        onClick={() =>
-                          setOpenFaqIdx(isOpen ? null : idx)
-                        }
-                        className="w-full text-left px-5 py-4 flex items-center justify-between gap-4 hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+                        onClick={() => toggleFaq(idx)}
+                        className="group w-full text-left px-5 py-4 flex items-center justify-between gap-4 transition-colors cursor-pointer"
                       >
-                        <div className="space-y-0.5">
-                          <span className="text-[11px] font-semibold text-[#007A59] block">
+                        <div className="space-y-1 pr-2">
+                          <span className="inline-block text-[11px] font-semibold text-[#007A59] bg-[#ECFDF5] border border-emerald-200/80 px-2.5 py-0.5 rounded-md">
                             {faq.category}
                           </span>
-                          <span className="text-sm font-bold text-[#111827] block">
+                          <span className="text-sm sm:text-[15px] font-bold text-[#111827] group-hover:text-[#007A59] transition-colors block leading-snug">
                             {faq.question}
                           </span>
                         </div>
-                        <ChevronDown
-                          className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${
-                            isOpen ? "rotate-180 text-[#009B70]" : ""
+                        <span
+                          className={`relative w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                            isOpen
+                              ? "bg-gradient-to-br from-[#009B70] to-[#007A59] text-white border border-[#007A59] ring-4 ring-emerald-500/15 shadow-[0_6px_14px_-3px_rgba(0,155,112,0.45),inset_0_1px_0_rgba(255,255,255,0.35)]"
+                              : "bg-gradient-to-b from-white to-[#F8FAFC] border border-slate-200/90 text-slate-600 shadow-[0_2px_5px_-1px_rgba(15,23,42,0.06),inset_0_1px_0_rgba(255,255,255,1)] group-hover:border-[#009B70]/50 group-hover:text-[#009B70] group-hover:ring-4 group-hover:ring-emerald-500/10 group-hover:shadow-[0_4px_10px_-2px_rgba(0,155,112,0.18)]"
                           }`}
-                        />
+                        >
+                          <svg
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            className={`w-4 h-4 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                              isOpen ? "rotate-180" : "group-hover:translate-y-0.5"
+                            }`}
+                          >
+                            <path
+                              d="M5.5 7.75L10 12.25L14.5 7.75"
+                              stroke="currentColor"
+                              strokeWidth="2.2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </span>
                       </button>
-                      {isOpen && (
-                        <div className="px-5 pb-4 pt-1 text-xs sm:text-sm text-[#475569] leading-relaxed bg-[#F8FAFC]/60 border-t border-slate-100">
-                          {faq.answer}
+
+                      <div
+                        className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
+                          isOpen
+                            ? "grid-rows-[1fr] opacity-100"
+                            : "grid-rows-[0fr] opacity-0"
+                        }`}
+                      >
+                        <div className="overflow-hidden">
+                          <div className="px-5 pb-4 pt-1 text-xs sm:text-sm text-[#475569] leading-relaxed border-t border-[#E2E8F0]/70">
+                            {faq.answer}
+                          </div>
                         </div>
-                      )}
+                      </div>
                     </div>
                   );
                 })}
