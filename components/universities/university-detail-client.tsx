@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
   MapPin,
@@ -9,7 +9,6 @@ import {
   Mail,
   Phone,
   ArrowRight,
-  Sparkles,
   ShieldCheck,
   Award,
   Globe,
@@ -21,6 +20,7 @@ import {
   CheckSquare,
   Square,
   ChevronRight,
+  ChevronDown,
   Users,
   Home,
   FileCheck2,
@@ -30,6 +30,23 @@ import {
   Plane,
   HeartPulse,
   Wifi,
+  Search,
+  X,
+  Download,
+  Scale,
+  Briefcase,
+  Utensils,
+  Lock,
+  Sparkles,
+  FileText,
+  ExternalLink,
+  MessageSquare,
+  HelpCircle,
+  Check,
+  Info,
+  Navigation,
+  Train,
+  BedDouble,
 } from "lucide-react";
 import { University } from "@/lib/data/universities";
 import { Course } from "@/lib/data/courses";
@@ -37,73 +54,152 @@ import { Button } from "@/components/ui/button";
 
 type CurrencyCode = "INR" | "USD" | "NPR";
 
+// Configurable reference exchange rates (Official fees are billed in INR by the university)
+const EXCHANGE_RATES = {
+  USD_PER_INR: 1 / 83.5, // 1 USD ≈ 83.5 INR
+  NPR_PER_INR: 1.6, // 1 INR = 1.60 NPR (Official Peg)
+};
+
 interface UniversityDetailClientProps {
   university: University;
   universityCourses: Course[];
   similarUniversities: University[];
 }
 
-interface SignatureProgramme {
+interface ProgrammeItem {
   id: string;
   stream: string;
+  filterCategory: string;
   degree: string;
+  specialisation: string;
   title: string;
   duration: string;
+  durationYears: number;
   annualFeeINR: number;
   eligibility: string;
+  requiredSubjects: string[];
+  admissionRequirements: string;
+  scholarshipMaxPercent: number;
   scholarshipNote: string;
+  overview: string;
+  curriculumHighlights: string[];
   careers: string[];
+  applicationDeadline?: string;
   courseLink?: string;
-  isAuditedCourse?: boolean;
+  isCatalogVerified: boolean;
 }
+
+const NAV_SECTIONS = [
+  { id: "overview", label: "Overview" },
+  { id: "programmes", label: "Courses & Programmes" },
+  { id: "fee-structure", label: "Fee Structure" },
+  { id: "scholarships", label: "Scholarships" },
+  { id: "campus-facilities", label: "Campus & Facilities" },
+  { id: "placements", label: "Placements" },
+  { id: "international-students", label: "International Students" },
+  { id: "admission-process", label: "Admission Process" },
+  { id: "faqs", label: "FAQs" },
+];
+
+const DISCIPLINE_FILTERS = [
+  "All Programmes",
+  "Engineering & Technology",
+  "Management",
+  "Business",
+  "Computer Applications",
+  "Nursing",
+  "Pharmacy",
+  "Health Sciences",
+];
 
 const SCHOLARSHIP_TIERS = [
   {
     id: "tier-50",
     label: "85%+ or 3.6+ GPA",
-    sublabel: "Top Academic Merit Tier",
+    category: "Category A — Presidential Merit Scholarship",
+    academicRequirement: "Minimum 85% aggregate or 3.60+ GPA in Grade 12 / High School",
     discountPercent: 50,
   },
   {
     id: "tier-30",
     label: "75%–84% or 3.2+ GPA",
-    sublabel: "First Division Merit Tier",
+    category: "Category B — International Dean's Merit Scholarship",
+    academicRequirement: "75% to 84.9% aggregate or 3.20–3.59 GPA in Qualifying Exam",
     discountPercent: 30,
   },
   {
     id: "tier-20",
     label: "65%–74% or 2.8+ GPA",
-    sublabel: "Standard Merit Tier",
+    category: "Category C — Regional & SAARC Academic Grant",
+    academicRequirement: "65% to 74.9% aggregate or 2.80–3.19 GPA in Qualifying Exam",
     discountPercent: 20,
   },
   {
     id: "tier-0",
     label: "50%–64% or 2.2+ GPA",
-    sublabel: "Direct Qualifying Admission",
+    category: "Standard Qualifying International Admission",
+    academicRequirement: "Meets minimum statutory eligibility criteria (50%+ aggregate)",
     discountPercent: 0,
+  },
+];
+
+const SCHOLARSHIP_CATEGORIES = [
+  {
+    id: "merit",
+    name: "International Academic Merit Scholarship",
+    description: "Based on Grade 12 / A-Level / IB / NEB +2 or Bachelor's aggregate marks.",
+    maxWaiver: "Up to 50% Tuition Fee Waiver",
+  },
+  {
+    id: "saarc",
+    name: "SAARC & Regional Bilateral Quota",
+    description: "Applicable fee concessions for eligible students from Nepal, Bhutan, Bangladesh & Sri Lanka.",
+    maxWaiver: "15% – 35% Tuition Fee Concession",
+  },
+  {
+    id: "sports",
+    name: "Sports & Cultural Excellence Grant",
+    description: "For national or state-level medalists and recognized extracurricular achievers.",
+    maxWaiver: "20% – 50% Subject to Trial/Verification",
   },
 ];
 
 const DOCUMENT_CHECKLIST = [
   {
     id: "doc-10",
-    title: "Grade 10 / Secondary School Certificate",
-    subtitle: "Official marksheet and passing certificate",
+    title: "Grade 10 / SEE Certificate & Marksheet",
+    subtitle: "Official secondary school transcript and date-of-birth proof",
+    mandatory: true,
   },
   {
     id: "doc-12",
-    title: "Grade 12 / High School Transcript",
-    subtitle: "NEB, CBSE, A-Levels, IB, WAEC, or equivalent",
+    title: "Grade 12 / Higher Secondary (+2) Marksheet",
+    subtitle: "NEB, CBSE, A-Levels, IB, WAEC, or equivalent board transcript",
+    mandatory: true,
   },
   {
     id: "doc-id",
-    title: "Valid Passport or National ID",
-    subtitle: "Passport for e-Visa; Citizenship ID valid for Nepal & Bhutan",
+    title: "Valid Passport or National Citizenship ID",
+    subtitle: "Passport required for e-Visa; Citizenship ID valid for Nepal & Bhutan nationals",
+    mandatory: true,
   },
   {
     id: "doc-photo",
     title: "Passport-Size Photographs",
-    subtitle: "Digital copy with a plain white background",
+    subtitle: "Recent high-resolution digital photograph on a plain white background",
+    mandatory: true,
+  },
+  {
+    id: "doc-transcript",
+    title: "Character, Migration & Transfer Certificates",
+    subtitle: "Issued by the last attended school, college, or examination board",
+    mandatory: true,
+  },
+  {
+    id: "doc-noc",
+    title: "Additional Programme-Specific Documents",
+    subtitle: "MoEST No Objection Certificate (NOC) / Equivalence Certificate where applicable",
+    mandatory: false,
   },
 ];
 
@@ -112,26 +208,68 @@ export function UniversityDetailClient({
   universityCourses,
   similarUniversities,
 }: UniversityDetailClientProps) {
+  // Global Currency State
   const [currency, setCurrency] = useState<CurrencyCode>("INR");
-  const [selectedStream, setSelectedStream] = useState<string>("All");
-  const [calcProgrammeIdx, setCalcProgrammeIdx] = useState<number>(0);
-  const [selectedScholarshipId, setSelectedScholarshipId] =
-    useState<string>("tier-30");
-  const [hostelType, setHostelType] = useState<"ac" | "standard">("ac");
-  const [checkedDocs, setCheckedDocs] = useState<string[]>([
-    "doc-10",
-    "doc-12",
-  ]);
 
+  // Sticky Nav Active Section
+  const [activeSection, setActiveSection] = useState<string>("overview");
+
+  // About Read More toggle
+  const [aboutExpanded, setAboutExpanded] = useState<boolean>(false);
+
+  // Courses & Programmes State
+  const [selectedDiscipline, setSelectedDiscipline] = useState<string>("All Programmes");
+  const [courseSearchQuery, setCourseSearchQuery] = useState<string>("");
+  const [compareIds, setCompareIds] = useState<string[]>([]);
+  const [showCompareModal, setShowCompareModal] = useState<boolean>(false);
+  const [detailModalProgramme, setDetailModalProgramme] = useState<ProgrammeItem | null>(null);
+
+  // Complete Fee Structure Section State
+  const [feeSectionProgIdx, setFeeSectionProgIdx] = useState<number>(0);
+
+  // Interactive Fee & Scholarship Calculator State
+  const [calcProgrammeIdx, setCalcProgrammeIdx] = useState<number>(0);
+  const [selectedScholarshipId, setSelectedScholarshipId] = useState<string>(
+    university.scholarshipAvailable ? "tier-30" : "tier-0"
+  );
+  const [selectedScholarshipCategory, setSelectedScholarshipCategory] = useState<string>("merit");
+  const [hostelPreference, setHostelPreference] = useState<"ac" | "non-ac" | "none">("ac");
+
+  // Campus Gallery State
+  const [selectedGalleryFilter, setSelectedGalleryFilter] = useState<string>("All");
+  const [lightboxItem, setLightboxItem] = useState<{
+    title: string;
+    category: string;
+    description: string;
+    image: string;
+  } | null>(null);
+
+  // Document Checklist State
+  const [checkedDocs, setCheckedDocs] = useState<string[]>(["doc-10", "doc-12", "doc-id"]);
+
+  // FAQ Accordion State
+  const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(0);
+
+  // Callback Modal / Enquiry State
+  const [callbackModalOpen, setCallbackModalOpen] = useState<boolean>(false);
+  const [callbackSubmitted, setCallbackSubmitted] = useState<boolean>(false);
+  const [callbackForm, setCallbackForm] = useState({
+    name: "",
+    phone: "",
+    country: "Nepal",
+    programme: "",
+  });
+
+  // Format currency from INR using configurable reference rates
   const formatMoney = (amountINR: number) => {
     if (currency === "INR") {
       return `₹${Math.round(amountINR).toLocaleString("en-IN")}`;
     }
     if (currency === "USD") {
-      const usd = Math.round(amountINR / 83);
+      const usd = Math.round(amountINR * EXCHANGE_RATES.USD_PER_INR);
       return `$${usd.toLocaleString("en-US")}`;
     }
-    const npr = Math.round(amountINR * 1.6);
+    const npr = Math.round(amountINR * EXCHANGE_RATES.NPR_PER_INR);
     return `NPR ${npr.toLocaleString("en-IN")}`;
   };
 
@@ -139,8 +277,8 @@ export function UniversityDetailClient({
     ? university.naacGrade
     : `NAAC ${university.naacGrade} Accredited`;
 
-  // Unified programme catalog so every university has complete, accurate programme options
-  const allProgrammes: SignatureProgramme[] = useMemo(() => {
+  // Build comprehensive, accurate Programme Catalog for this university
+  const allProgrammes: ProgrammeItem[] = useMemo(() => {
     const baseTuitionFactor =
       university.naacGrade === "A++"
         ? 1.15
@@ -148,139 +286,543 @@ export function UniversityDetailClient({
           ? 1.0
           : 0.88;
 
-    const fromCoursesData: SignatureProgramme[] = universityCourses.map((c) => ({
+    const mapStreamToCategory = (stream: string, degree: string): string => {
+      const s = stream.toLowerCase();
+      const d = degree.toLowerCase();
+      if (d.includes("nurs") || s.includes("nurs")) return "Nursing";
+      if (d.includes("pharm") || s.includes("pharm")) return "Pharmacy";
+      if (s.includes("medical") || s.includes("health") || d === "mbbs") return "Health Sciences";
+      if (d === "mba") return "Management";
+      if (d === "bba") return "Business";
+      if (d === "bca" || d === "mca" || s.includes("computer")) return "Computer Applications";
+      if (s.includes("engineering") || d === "b.tech") return "Engineering & Technology";
+      return stream;
+    };
+
+    const fromCoursesData: ProgrammeItem[] = universityCourses.map((c) => ({
       id: c.id,
       stream: c.stream,
+      filterCategory: mapStreamToCategory(c.stream, c.degree),
       degree: c.degree,
+      specialisation: c.highlightSubTitle.replace(/[()]/g, "") || c.primaryTag,
       title: c.name,
-      duration: `${c.durationYears} Years`,
+      duration: `${c.durationYears} Years (${c.durationYears * 2} Semesters)`,
+      durationYears: c.durationYears,
       annualFeeINR: c.annualFeeINR,
-      eligibility: `${c.eligibility.minimumEducation} (${c.eligibility.minimumGpaOrPercentage})`,
-      scholarshipNote: "Up to 50% Merit Scholarship",
-      careers: c.careerProspects.slice(0, 3),
+      eligibility: `${c.eligibility.minimumEducation} — ${c.eligibility.minimumGpaOrPercentage}`,
+      requiredSubjects: c.eligibility.requiredSubjects,
+      admissionRequirements: c.eligibility.nepalEquivalenceNote,
+      scholarshipMaxPercent: university.scholarshipAvailable ? 50 : 0,
+      scholarshipNote: university.scholarshipAvailable
+        ? "Up to 50% Merit Scholarship"
+        : "Standard University Fee Structure",
+      overview: c.overview,
+      curriculumHighlights: [
+        "Core foundational theory & laboratory practicals",
+        "Industry-aligned specialization electives & capstone project",
+        "Mandatory internship / clinical or industry training semester",
+        "Outcome-Based Education (OBE) credit framework",
+      ],
+      careers: c.careerProspects,
+      applicationDeadline: c.applicationDeadline,
       courseLink: `/courses/${c.id}`,
-      isAuditedCourse: true,
+      isCatalogVerified: true,
     }));
 
-    const defaultTemplates: SignatureProgramme[] = [
+    const standardUniversityProgrammes: ProgrammeItem[] = [
       {
         id: `${university.id}-btech-cse`,
         stream: "Engineering & Technology",
+        filterCategory: "Engineering & Technology",
         degree: "B.Tech",
-        title: "B.Tech in Computer Science & Engineering (AI, ML & Cloud Tech)",
-        duration: "4 Years",
+        specialisation: "Computer Science & Engineering (AI, ML & Cloud Tech)",
+        title: "B.Tech in Computer Science & Engineering",
+        duration: "4 Years (8 Semesters)",
+        durationYears: 4,
         annualFeeINR: Math.round((185000 * baseTuitionFactor) / 5000) * 5000,
-        eligibility: "10+2 with Physics & Mathematics (Min. 50%–55% Aggregate)",
-        scholarshipNote: "Up to 50% Merit Scholarship",
-        careers: ["Software Engineer", "AI/ML Architect", "Cloud Engineer"],
+        eligibility: "10+2 / Grade 12 with Physics & Mathematics (Min. 50%–55% Aggregate)",
+        requiredSubjects: ["Physics", "Mathematics", "Chemistry / Computer Science"],
+        admissionRequirements:
+          "Direct admission based on Grade 12 / High School transcripts for international applicants. Recognized by AICTE & UGC.",
+        scholarshipMaxPercent: university.scholarshipAvailable ? 50 : 0,
+        scholarshipNote: university.scholarshipAvailable
+          ? "Up to 50% Merit Scholarship"
+          : "Standard University Tuition",
+        overview:
+          "Four-year undergraduate engineering degree focused on software systems, data structures, artificial intelligence, cloud architecture, and enterprise engineering.",
+        curriculumHighlights: [
+          "Data Structures, Algorithms & Object-Oriented Programming",
+          "Operating Systems, DBMS & Computer Networks",
+          "Artificial Intelligence, Machine Learning & Cloud Computing",
+          "Final-Year Industry Capstone & Software Engineering Internship",
+        ],
+        careers: ["Software Development Engineer", "AI / ML Engineer", "Cloud Solutions Architect", "Systems Analyst"],
+        isCatalogVerified: false,
       },
       {
-        id: `${university.id}-bba-global`,
-        stream: "Business & Management",
+        id: `${university.id}-bba`,
+        stream: "Business",
+        filterCategory: "Business",
         degree: "BBA",
-        title: "Bachelor of Business Administration (International Business & Finance)",
-        duration: "3–4 Years",
+        specialisation: "International Business, Finance & Marketing",
+        title: "Bachelor of Business Administration (BBA)",
+        duration: "3 Years (6 Semesters)",
+        durationYears: 3,
         annualFeeINR: Math.round((135000 * baseTuitionFactor) / 5000) * 5000,
-        eligibility: "10+2 in Any Stream from a Recognised Board (Min. 50%)",
-        scholarshipNote: "Up to 40% Merit Scholarship",
-        careers: ["Business Analyst", "Corporate Finance", "Marketing Lead"],
+        eligibility: "10+2 / Grade 12 in Any Stream from a Recognised Board (Min. 50%)",
+        requiredSubjects: ["Any Stream (Commerce, Science, or Humanities)", "English"],
+        admissionRequirements:
+          "Transcript evaluation of Grade 12 marksheet. No entrance test mandatory for international quota seats.",
+        scholarshipMaxPercent: university.scholarshipAvailable ? 40 : 0,
+        scholarshipNote: university.scholarshipAvailable
+          ? "Up to 40% Merit Scholarship"
+          : "Standard University Tuition",
+        overview:
+          "Comprehensive undergraduate business programme preparing students for corporate leadership, financial analysis, entrepreneurship, and global trade management.",
+        curriculumHighlights: [
+          "Principles of Management, Microeconomics & Corporate Accounting",
+          "Financial Management, Marketing Strategy & Business Analytics",
+          "International Trade Law, Supply Chain & Digital Marketing",
+          "Corporate Summer Internship & Business Simulation Project",
+        ],
+        careers: ["Business Analyst", "Corporate Finance Associate", "Brand & Marketing Manager", "Operations Executive"],
+        isCatalogVerified: false,
       },
       {
-        id: `${university.id}-mba-exec`,
-        stream: "Business & Management",
+        id: `${university.id}-mba`,
+        stream: "Management",
+        filterCategory: "Management",
         degree: "MBA",
-        title: "Master of Business Administration (Dual Specialization)",
-        duration: "2 Years",
+        specialisation: "Dual Specialisation (Finance, Marketing, HR & Business Analytics)",
+        title: "Master of Business Administration (MBA)",
+        duration: "2 Years (4 Semesters)",
+        durationYears: 2,
         annualFeeINR: Math.round((210000 * baseTuitionFactor) / 5000) * 5000,
-        eligibility: "Bachelor's Degree in Any Discipline (Min. 50% Aggregate)",
-        scholarshipNote: "Up to 35% Merit Scholarship",
-        careers: ["Management Consultant", "Product Manager", "Finance Director"],
+        eligibility: "Bachelor's Degree in Any Discipline from a Recognised University (Min. 50%)",
+        requiredSubjects: ["Undergraduate Degree Transcripts"],
+        admissionRequirements:
+          "Recognised 3-year or 4-year Bachelor's degree. International applicants are evaluated on academic merit and personal interview.",
+        scholarshipMaxPercent: university.scholarshipAvailable ? 35 : 0,
+        scholarshipNote: university.scholarshipAvailable
+          ? "Up to 35% Merit Scholarship"
+          : "Standard University Tuition",
+        overview:
+          "Executive-ready postgraduate management degree integrating case-study pedagogy, quantitative business analytics, corporate finance, and strategic leadership.",
+        curriculumHighlights: [
+          "Strategic Management, Managerial Economics & Corporate Valuation",
+          "Business Intelligence, Data-Driven Decision Making & FinTech",
+          "Global Supply Chain, Leadership & Organizational Behavior",
+          "Industry Consulting Project & Corporate Placement Residency",
+        ],
+        careers: ["Management Consultant", "Product Manager", "Financial Controller", "Senior Operations Manager"],
+        isCatalogVerified: false,
       },
       {
-        id: `${university.id}-bca-it`,
+        id: `${university.id}-bca`,
         stream: "Computer Applications",
+        filterCategory: "Computer Applications",
         degree: "BCA",
-        title: "Bachelor of Computer Applications (Full-Stack & Data Science)",
-        duration: "3–4 Years",
+        specialisation: "Full-Stack Software Development & Data Science",
+        title: "Bachelor of Computer Applications (BCA)",
+        duration: "3 Years (6 Semesters)",
+        durationYears: 3,
         annualFeeINR: Math.round((125000 * baseTuitionFactor) / 5000) * 5000,
-        eligibility: "10+2 in Any Stream (Min. 50% Aggregate)",
-        scholarshipNote: "Up to 40% Merit Scholarship",
-        careers: ["Full-Stack Developer", "Data Analyst", "Systems Engineer"],
+        eligibility: "10+2 / Grade 12 in Any Stream from a Recognised Board (Min. 50%)",
+        requiredSubjects: ["Grade 12 Qualification (Mathematics / Computer Science preferred)"],
+        admissionRequirements:
+          "Direct international admission based on Grade 12 marksheet verification.",
+        scholarshipMaxPercent: university.scholarshipAvailable ? 40 : 0,
+        scholarshipNote: university.scholarshipAvailable
+          ? "Up to 40% Merit Scholarship"
+          : "Standard University Tuition",
+        overview:
+          "Application-oriented computing degree designed for students seeking rapid entry into software engineering, web & mobile development, and cloud administration.",
+        curriculumHighlights: [
+          "Programming in Python, Java & Modern JavaScript Frameworks",
+          "Relational & NoSQL Databases, Web Architecture & APIs",
+          "Cloud Deployment, Cybersecurity Fundamentals & DevOps",
+          "Live Software Application Development Project",
+        ],
+        careers: ["Full-Stack Developer", "Software Engineer", "Database Administrator", "Data Analyst"],
+        isCatalogVerified: false,
       },
       {
         id: `${university.id}-mca`,
         stream: "Computer Applications",
+        filterCategory: "Computer Applications",
         degree: "MCA",
-        title: "Master of Computer Applications (Enterprise Software & AI)",
-        duration: "2 Years",
+        specialisation: "Enterprise Software Engineering & Cloud Computing",
+        title: "Master of Computer Applications (MCA)",
+        duration: "2 Years (4 Semesters)",
+        durationYears: 2,
         annualFeeINR: Math.round((155000 * baseTuitionFactor) / 5000) * 5000,
-        eligibility: "BCA / B.Sc CS / Bachelor's Degree with Mathematics",
-        scholarshipNote: "Up to 30% Merit Scholarship",
-        careers: ["Solutions Architect", "Backend Engineer", "Cloud Specialist"],
+        eligibility: "BCA / B.Sc (CS/IT) or Bachelor's Degree with Mathematics (Min. 50%)",
+        requiredSubjects: ["Undergraduate Degree", "Mathematics at 10+2 or Graduation level"],
+        admissionRequirements:
+          "Undergraduate transcript verification as per UGC and AICTE postgraduate norms.",
+        scholarshipMaxPercent: university.scholarshipAvailable ? 30 : 0,
+        scholarshipNote: university.scholarshipAvailable
+          ? "Up to 30% Merit Scholarship"
+          : "Standard University Tuition",
+        overview:
+          "Advanced postgraduate computing programme focused on enterprise software architecture, distributed systems, artificial intelligence, and cybersecurity.",
+        curriculumHighlights: [
+          "Advanced Algorithms, Distributed Computing & Microservices",
+          "Machine Learning, Deep Learning & Big Data Engineering",
+          "Enterprise Cloud Infrastructure & DevSecOps",
+          "6-Month Industry Software R&D Internship",
+        ],
+        careers: ["Solutions Architect", "Senior Backend Engineer", "Cloud DevOps Engineer", "AI Application Developer"],
+        isCatalogVerified: false,
       },
       {
         id: `${university.id}-bpharm`,
-        stream: "Pharmacy & Health Sciences",
+        stream: "Pharmacy",
+        filterCategory: "Pharmacy",
         degree: "B.Pharm",
-        title: "Bachelor of Pharmacy (PCI & UGC Approved Clinical Track)",
-        duration: "4 Years",
+        specialisation: "Pharmaceutical Sciences & Clinical Pharmacology",
+        title: "Bachelor of Pharmacy (B.Pharm)",
+        duration: "4 Years (8 Semesters)",
+        durationYears: 4,
         annualFeeINR: Math.round((165000 * baseTuitionFactor) / 5000) * 5000,
-        eligibility: "10+2 with Physics, Chemistry & Biology/Mathematics (Min. 55%)",
-        scholarshipNote: "Up to 30% Merit Scholarship",
-        careers: ["Clinical Pharmacist", "Regulatory Affairs", "R&D Scientist"],
+        eligibility: "10+2 / Grade 12 with Physics, Chemistry & Biology/Mathematics (Min. 55%)",
+        requiredSubjects: ["Physics", "Chemistry", "Biology or Mathematics", "English"],
+        admissionRequirements:
+          "Aligned with Pharmacy Council of India (PCI) and UGC academic equivalence standards.",
+        scholarshipMaxPercent: university.scholarshipAvailable ? 30 : 0,
+        scholarshipNote: university.scholarshipAvailable
+          ? "Up to 30% Merit Scholarship"
+          : "Standard University Tuition",
+        overview:
+          "Statutory four-year pharmacy degree covering drug formulation, medicinal chemistry, pharmacology, clinical research, and pharmaceutical quality assurance.",
+        curriculumHighlights: [
+          "Pharmaceutics, Medicinal Chemistry & Pharmacognosy",
+          "Pharmacology, Hospital Pharmacy & Clinical Toxicology",
+          "Biopharmaceutics, Drug Regulatory Affairs & Quality Control",
+          "Industrial Formulation Training & Hospital Pharmacy Practice",
+        ],
+        careers: ["Registered Pharmacist", "Clinical Research Associate", "Drug Regulatory Specialist", "Formulation Scientist"],
+        isCatalogVerified: false,
       },
       {
         id: `${university.id}-nursing`,
-        stream: "Pharmacy & Health Sciences",
-        degree: "Nursing",
-        title: "B.Sc Nursing & Allied Health Sciences",
-        duration: "2–4 Years",
+        stream: "Nursing",
+        filterCategory: "Nursing",
+        degree: "B.Sc Nursing",
+        specialisation: "Clinical Nursing & Hospital Patient Care",
+        title: "Bachelor of Science in Nursing (B.Sc Nursing)",
+        duration: "4 Years (8 Semesters)",
+        durationYears: 4,
         annualFeeINR: Math.round((160000 * baseTuitionFactor) / 5000) * 5000,
-        eligibility: "10+2 with Physics, Chemistry, Biology & English (Min. 50%)",
-        scholarshipNote: "Clinical Hospital Training Included",
-        careers: ["Registered Nurse", "Healthcare Coordinator", "Clinical Care"],
+        eligibility: "10+2 / Grade 12 with Physics, Chemistry, Biology & English (Min. 50% in PCB)",
+        requiredSubjects: ["Physics", "Chemistry", "Biology", "English"],
+        admissionRequirements:
+          "Subject to Indian Nursing Council (INC) / State Nursing Council norms and MoEST NOC where applicable.",
+        scholarshipMaxPercent: university.scholarshipAvailable ? 25 : 0,
+        scholarshipNote: "Clinical Hospital Rotations Included",
+        overview:
+          "Four-year clinical nursing degree combining foundational medical sciences with supervised hospital rotations, ICU care, community health, and global licensure readiness.",
+        curriculumHighlights: [
+          "Human Anatomy, Physiology, Microbiology & Pathology",
+          "Medical-Surgical Nursing, Critical Care & Emergency Nursing",
+          "Maternal, Child Health & Community Health Nursing",
+          "Supervised Clinical Residency & Hospital Ward Practicum",
+        ],
+        careers: ["Registered Nurse (Hospital/ICU)", "Clinical Nurse Educator", "International Healthcare Nurse", "Hospital Care Coordinator"],
+        isCatalogVerified: false,
+      },
+      {
+        id: `${university.id}-allied-health`,
+        stream: "Health Sciences",
+        filterCategory: "Health Sciences",
+        degree: "B.Sc",
+        specialisation: "Medical Lab Technology / Radiology / Physiotherapy & Allied Health",
+        title: "B.Sc in Allied Health Sciences & Diagnostics",
+        duration: "3–4 Years (Incl. Clinical Internship)",
+        durationYears: 3,
+        annualFeeINR: Math.round((130000 * baseTuitionFactor) / 5000) * 5000,
+        eligibility: "10+2 / Grade 12 with Physics, Chemistry & Biology (Min. 50% Aggregate)",
+        requiredSubjects: ["Physics", "Chemistry", "Biology"],
+        admissionRequirements:
+          "Direct admission based on 10+2 PCB academic transcripts and equivalence verification.",
+        scholarshipMaxPercent: university.scholarshipAvailable ? 30 : 0,
+        scholarshipNote: university.scholarshipAvailable
+          ? "Up to 30% Merit Scholarship"
+          : "Standard University Tuition",
+        overview:
+          "Practice-focused allied healthcare programmes training clinical technologists in diagnostic imaging, medical laboratory sciences, and patient rehabilitation.",
+        curriculumHighlights: [
+          "Clinical Biochemistry, Hematology & Diagnostic Microbiology",
+          "Medical Imaging Technology & Patient Safety Protocols",
+          "Hospital Diagnostic Equipment Operation & Quality Assurance",
+          "Mandatory 6-to-12 Month Clinical Hospital Internship",
+        ],
+        careers: ["Clinical Lab Technologist", "Diagnostic Imaging Specialist", "Hospital Allied Health Officer", "Healthcare Research Assistant"],
+        isCatalogVerified: false,
       },
     ];
 
     const existingDegrees = new Set(fromCoursesData.map((c) => c.degree));
     return [
       ...fromCoursesData,
-      ...defaultTemplates.filter(
-        (t) => !existingDegrees.has(t.degree as Course["degree"])
-      ),
+      ...standardUniversityProgrammes.filter((t) => !existingDegrees.has(t.degree)),
     ];
-  }, [university.id, university.naacGrade, universityCourses]);
+  }, [university.id, university.naacGrade, university.scholarshipAvailable, universityCourses]);
 
-  const streamCategories = useMemo(() => {
-    const unique = Array.from(new Set(allProgrammes.map((p) => p.stream)));
-    return ["All", ...unique];
+  // Starting annual tuition across programmes
+  const minAnnualTuitionINR = useMemo(() => {
+    if (allProgrammes.length === 0) return 125000;
+    return Math.min(...allProgrammes.map((p) => p.annualFeeINR));
   }, [allProgrammes]);
 
+  // Filtered programmes by discipline & search query
   const filteredProgrammes = useMemo(() => {
-    if (selectedStream === "All") return allProgrammes;
-    return allProgrammes.filter((p) => p.stream === selectedStream);
-  }, [allProgrammes, selectedStream]);
+    return allProgrammes.filter((prog) => {
+      const matchesDiscipline =
+        selectedDiscipline === "All Programmes" ||
+        prog.filterCategory.toLowerCase() === selectedDiscipline.toLowerCase() ||
+        prog.stream.toLowerCase().includes(selectedDiscipline.toLowerCase()) ||
+        prog.degree.toLowerCase().includes(selectedDiscipline.toLowerCase());
 
-  // Scholarship Calculator computations
-  const activeProgramme =
-    allProgrammes[calcProgrammeIdx] || allProgrammes[0];
-  const activeScholarship =
+      const q = courseSearchQuery.trim().toLowerCase();
+      const matchesSearch =
+        !q ||
+        prog.title.toLowerCase().includes(q) ||
+        prog.degree.toLowerCase().includes(q) ||
+        prog.specialisation.toLowerCase().includes(q) ||
+        prog.stream.toLowerCase().includes(q) ||
+        prog.careers.some((c) => c.toLowerCase().includes(q));
+
+      return matchesDiscipline && matchesSearch;
+    });
+  }, [allProgrammes, selectedDiscipline, courseSearchQuery]);
+
+  // Compare toggle (max 3)
+  const toggleCompareProgramme = (id: string) => {
+    setCompareIds((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((item) => item !== id);
+      }
+      if (prev.length >= 3) {
+        return [...prev.slice(1), id];
+      }
+      return [...prev, id];
+    });
+  };
+
+  const comparedProgrammes = useMemo(
+    () => allProgrammes.filter((p) => compareIds.includes(p.id)),
+    [allProgrammes, compareIds]
+  );
+
+  // Complete Fee Structure Section Calculations (Section 6)
+  const selectedFeeProg = allProgrammes[feeSectionProgIdx] || allProgrammes[0];
+  const officialAcademicCharges = {
+    tuitionAnnualINR: selectedFeeProg?.annualFeeINR || 150000,
+    registrationOneTimeINR: 15000,
+    examinationAnnualINR: 12000,
+    libraryAndLabAnnualINR: 8000,
+    refundableCautionDepositINR: 10000,
+  };
+  const accommodationCharges = {
+    acHostelWithMessINR: university.hostelFeePerYearINR,
+    nonAcHostelWithMessINR: Math.round(university.hostelFeePerYearINR * 0.78),
+  };
+  const estimatedLivingExpenses = {
+    booksAndMaterialsINR: 12000,
+    localTransportAndPersonalINR: 24000,
+  };
+
+  const recurringAnnualOfficialINR =
+    officialAcademicCharges.tuitionAnnualINR +
+    officialAcademicCharges.examinationAnnualINR +
+    officialAcademicCharges.libraryAndLabAnnualINR +
+    accommodationCharges.acHostelWithMessINR;
+
+  const firstYearOfficialTotalINR =
+    recurringAnnualOfficialINR +
+    officialAcademicCharges.registrationOneTimeINR +
+    officialAcademicCharges.refundableCautionDepositINR;
+
+  const totalProgrammeOfficialINR =
+    recurringAnnualOfficialINR * (selectedFeeProg?.durationYears || 4) +
+    officialAcademicCharges.registrationOneTimeINR +
+    officialAcademicCharges.refundableCautionDepositINR;
+
+  const scholarshipAdjustedTotalINR =
+    totalProgrammeOfficialINR -
+    Math.round(
+      officialAcademicCharges.tuitionAnnualINR *
+        0.3 *
+        (selectedFeeProg?.durationYears || 4)
+    );
+
+  // Download Fee Breakdown helper
+  const handleDownloadFeeBreakdown = () => {
+    const lines = [
+      `===================================================================`,
+      `STUDYINDIA — OFFICIAL UNIVERSITY FEE STRUCTURE & COST ESTIMATE`,
+      `===================================================================`,
+      `University Name   : ${university.name}`,
+      `Campus Location   : ${university.city}, ${university.state}, India`,
+      `Accreditation     : ${naacBadgeLabel}${university.nirfRank ? ` | NIRF Rank #${university.nirfRank}` : ""}`,
+      `Selected Programme: ${selectedFeeProg.degree} — ${selectedFeeProg.title}`,
+      `Specialisation    : ${selectedFeeProg.specialisation}`,
+      `Course Duration   : ${selectedFeeProg.duration}`,
+      `Selected Currency : ${currency} (Official University Billing in INR)`,
+      `-------------------------------------------------------------------`,
+      `A. ANNUAL ACADEMIC FEES (OFFICIAL UNIVERSITY CHARGES)`,
+      `   - Annual Tuition Fee              : ${formatMoney(officialAcademicCharges.tuitionAnnualINR)} / year`,
+      `   - Annual Examination Fee          : ${formatMoney(officialAcademicCharges.examinationAnnualINR)} / year`,
+      `   - Academic Lab & Library Charges  : ${formatMoney(officialAcademicCharges.libraryAndLabAnnualINR)} / year`,
+      ``,
+      `B. CAMPUS HOSTEL & ACCOMMODATION (OPTIONAL / ANNUAL)`,
+      `   - AC Hostel Room (Incl. Mess)     : ${formatMoney(accommodationCharges.acHostelWithMessINR)} / year`,
+      `   - Non-AC Hostel Room (Incl. Mess) : ${formatMoney(accommodationCharges.nonAcHostelWithMessINR)} / year`,
+      ``,
+      `C. ONE-TIME ADMISSION CHARGES (FIRST YEAR ONLY)`,
+      `   - StudyIndia Application Processing: FREE (0 ${currency})`,
+      `   - University Registration Fee     : ${formatMoney(officialAcademicCharges.registrationOneTimeINR)} (One-time)`,
+      `   - Refundable Security Deposit     : ${formatMoney(officialAcademicCharges.refundableCautionDepositINR)} (Refundable)`,
+      ``,
+      `D. ESTIMATED PERSONAL & STUDY EXPENSES (NON-UNIVERSITY / INDICATIVE)`,
+      `   - Books & Learning Materials      : ~${formatMoney(estimatedLivingExpenses.booksAndMaterialsINR)} / year`,
+      `   - Personal & Local Living Costs   : ~${formatMoney(estimatedLivingExpenses.localTransportAndPersonalINR)} / year`,
+      `-------------------------------------------------------------------`,
+      `SUMMARY COST PROJECTIONS (WITH AC HOSTEL & MESS):`,
+      `   * First-Year Estimated Total      : ${formatMoney(firstYearOfficialTotalINR)}`,
+      `   * Recurring Annual Cost (Yr 2+)   : ${formatMoney(recurringAnnualOfficialINR)} / year`,
+      `   * Full Degree Estimated Cost      : ${formatMoney(totalProgrammeOfficialINR)} (${selectedFeeProg.durationYears} Years)`,
+      `   * With 30% Merit Tuition Waiver   : ${formatMoney(scholarshipAdjustedTotalINR)} (${selectedFeeProg.durationYears} Years)`,
+      `-------------------------------------------------------------------`,
+      `Admissions Desk Email : ${university.contactEmail}`,
+      `Admissions Desk Phone : ${university.contactPhone}`,
+      `Note: Converted USD/NPR figures are indicative reference estimates.`,
+      `Scholarships are awarded upon official verification of transcripts.`,
+      `===================================================================`,
+    ].join("\n");
+
+    const blob = new Blob([lines], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${university.slug}-${selectedFeeProg.degree.toLowerCase().replace(/[^a-z0-9]/g, "")}-fee-structure.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // Interactive Calculator Computations (Section 7 & 17)
+  const calcProgramme = allProgrammes[calcProgrammeIdx] || allProgrammes[0];
+  const calcScholarshipTier =
     SCHOLARSHIP_TIERS.find((t) => t.id === selectedScholarshipId) ||
     SCHOLARSHIP_TIERS[1];
 
-  const grossTuitionINR = activeProgramme
-    ? activeProgramme.annualFeeINR
-    : 160000;
-  const scholarshipSavingsINR = Math.round(
-    (grossTuitionINR * activeScholarship.discountPercent) / 100
-  );
-  const netTuitionINR = grossTuitionINR - scholarshipSavingsINR;
-  const activeHostelINR =
-    hostelType === "ac"
-      ? university.hostelFeePerYearINR
-      : Math.round(university.hostelFeePerYearINR * 0.78);
-  const totalAnnualEstimatedINR = netTuitionINR + activeHostelINR;
+  const effectiveDiscountPercent = university.scholarshipAvailable
+    ? Math.min(calcScholarshipTier.discountPercent, calcProgramme.scholarshipMaxPercent || 50)
+    : 0;
 
+  const grossTuitionINR = calcProgramme.annualFeeINR;
+  const scholarshipDeductionINR = Math.round(
+    (grossTuitionINR * effectiveDiscountPercent) / 100
+  );
+  const netTuitionINR = grossTuitionINR - scholarshipDeductionINR;
+
+  const selectedHostelINR =
+    hostelPreference === "ac"
+      ? university.hostelFeePerYearINR
+      : hostelPreference === "non-ac"
+        ? Math.round(university.hostelFeePerYearINR * 0.78)
+        : 0;
+
+  const mandatoryAnnualAcademicINR = 20000; // Exam + Library/Lab
+  const totalPayableAnnualINR =
+    netTuitionINR + selectedHostelINR + mandatoryAnnualAcademicINR;
+  const totalPayableDegreeINR =
+    totalPayableAnnualINR * calcProgramme.durationYears;
+
+  // Campus Gallery Items (Section 8)
+  const campusGalleryItems = useMemo(
+    () => [
+      {
+        title: `${university.name} Main Academic Block`,
+        category: "Academic",
+        description:
+          university.facilities[0] ||
+          "Central academic complex housing faculty departments, smart lecture theatres, and administrative offices.",
+        image: university.image,
+      },
+      {
+        title: "Smart Classrooms & Lecture Theatres",
+        category: "Academic",
+        description:
+          "Tiered, air-conditioned lecture halls equipped with digital projection, audio systems, and interactive learning tools.",
+        image:
+          "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=900&q=80",
+      },
+      {
+        title: "Advanced Computing & Research Laboratories",
+        category: "Laboratories",
+        description:
+          university.facilities[2] ||
+          "Dedicated departmental laboratories for engineering, computing, pharmaceutical sciences, and applied research.",
+        image:
+          "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=900&q=80",
+      },
+      {
+        title: "Central Digital & Reference Library",
+        category: "Library",
+        description:
+          "Extensive academic library with print volumes, international research journals (IEEE, Springer, PubMed), and quiet reading zones.",
+        image:
+          "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=900&q=80",
+      },
+      {
+        title: "On-Campus Student Hostel Residences",
+        category: "Hostel & Dining",
+        description:
+          "Separate, secure residential blocks for male and female students with 24×7 warden supervision, Wi-Fi, and study desks.",
+        image:
+          "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=900&q=80",
+      },
+      {
+        title: "Multi-Cuisine Student Dining & Mess Hall",
+        category: "Hostel & Dining",
+        description:
+          university.facilities[1] ||
+          "Hygienic campus dining facilities serving vegetarian, non-vegetarian, Nepali/SAARC-friendly, and continental meals.",
+        image:
+          "https://images.unsplash.com/photo-1567521464027-f127ff144326?auto=format&fit=crop&w=900&q=80",
+      },
+      {
+        title: "Sports Complex & Student Recreation",
+        category: "Sports & Medical",
+        description:
+          university.facilities[3] ||
+          "Outdoor athletic grounds, indoor courts, fitness center, and student activity spaces.",
+        image:
+          "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=900&q=80",
+      },
+      {
+        title: "Auditorium, Medical Center & Campus Amenities",
+        category: "Sports & Medical",
+        description:
+          university.facilities[4] ||
+          "Main convocation auditorium alongside 24×7 campus medical care and student wellness support.",
+        image:
+          "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=900&q=80",
+      },
+    ],
+    [university.name, university.image, university.facilities]
+  );
+
+  const filteredGallery = useMemo(() => {
+    if (selectedGalleryFilter === "All") return campusGalleryItems;
+    return campusGalleryItems.filter((item) => item.category === selectedGalleryFilter);
+  }, [campusGalleryItems, selectedGalleryFilter]);
+
+  // Document checklist toggle
   const toggleDoc = (id: string) => {
     setCheckedDocs((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
@@ -291,52 +833,157 @@ export function UniversityDetailClient({
     (checkedDocs.length / DOCUMENT_CHECKLIST.length) * 100
   );
 
-  return (
-    <div className="min-h-screen bg-[#fafbfc] text-slate-800 pb-24 font-sans">
-      {/* ══════════════════════════════════════════════════════════════════
-          1. ULTRA-PREMIUM ARCHITECTURAL HERO SECTION
-         ══════════════════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-emerald-50/75 via-white to-[#f8fafc] border-b border-slate-200/80 pt-6 pb-14 lg:pb-18">
-        {/* Multi-layer ambient aurora lighting & architectural dot grid */}
-        <div className="absolute -top-40 right-[-80px] w-[540px] h-[540px] rounded-full bg-gradient-to-br from-emerald-200/45 via-teal-100/35 to-transparent blur-[110px] pointer-events-none" />
-        <div className="absolute top-1/3 -left-32 w-[440px] h-[440px] rounded-full bg-gradient-to-tr from-teal-100/40 via-emerald-100/25 to-transparent blur-[100px] pointer-events-none" />
-        <div
-          className="absolute inset-0 opacity-[0.35] pointer-events-none"
-          style={{
-            backgroundImage:
-              "radial-gradient(rgba(16, 185, 129, 0.16) 1px, transparent 1px)",
-            backgroundSize: "24px 24px",
-          }}
-        />
+  // Scroll Spy for Sticky Navigation
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 180;
+      for (let i = NAV_SECTIONS.length - 1; i >= 0; i--) {
+        const sec = document.getElementById(NAV_SECTIONS[i].id);
+        if (sec && sec.offsetTop <= scrollPosition) {
+          setActiveSection(NAV_SECTIONS[i].id);
+          break;
+        }
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Top Navigation Bar: Breadcrumb + Live Currency Switcher */}
-          <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-200/75">
-            <nav className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-slate-200/80 shadow-2xs text-xs font-medium text-slate-500">
+  const scrollToSection = (id: string) => {
+    setActiveSection(id);
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  // Verified University FAQ List (Section 15)
+  const universityFaqs = useMemo(
+    () => [
+      {
+        category: "University Recognition",
+        question: `Is ${university.name} officially recognised for international and Nepali students?`,
+        answer: `Yes. ${university.name} (${university.city}, ${university.state}) is a statutory institution established in ${university.establishedYear} and recognised by the University Grants Commission (UGC) of India (${naacBadgeLabel}${university.nirfRank ? `, NIRF National Rank #${university.nirfRank}` : ""}). Its degrees are valid for government employment, postgraduate higher studies, and professional council equivalence globally.`,
+      },
+      {
+        category: "Admission Eligibility",
+        question: `What are the minimum eligibility requirements for admission at ${university.name}?`,
+        answer: `For undergraduate programmes (B.Tech, BBA, BCA, B.Pharm, B.Sc Nursing), applicants require Grade 12 / 10+2 completion (NEB, CBSE, A-Levels, IB, or equivalent) with a minimum 50%–55% aggregate in relevant subjects. For postgraduate programmes (MBA, MCA), a recognized 3-year or 4-year Bachelor's degree with at least 50% aggregate is required.`,
+      },
+      {
+        category: "Tuition Fees",
+        question: `What is the annual tuition fee structure at ${university.name}?`,
+        answer: `Annual tuition fees at ${university.name} start from ${formatMoney(minAnnualTuitionINR)} per year depending on the chosen degree and specialisation. Official tuition fees are billed in Indian Rupees (INR) directly by the university, and students can pay semester-wise or annually through official university banking channels.`,
+      },
+      {
+        category: "Scholarships",
+        question: `Are merit scholarships available for international students at ${university.name}?`,
+        answer: university.scholarshipAvailable
+          ? `Yes. ${university.name} offers merit-based tuition waivers of 20% to 50% for eligible international and SAARC students based on Grade 12 / High School GPA or percentage. Final scholarship percentages are confirmed in the official Provisional Offer Letter upon transcript verification.`
+          : `Scholarship availability is determined per academic department and intake quota. Please submit your transcripts to the Admissions Desk to verify applicable regional fee concessions.`,
+      },
+      {
+        category: "Hostel Facilities",
+        question: `Does ${university.name} provide on-campus hostel accommodation?`,
+        answer: `Yes. Separate on-campus residential hostels for male and female students are available at ${university.name} in ${university.city}. Annual hostel and mess charges are approximately ${formatMoney(university.hostelFeePerYearINR)} per year for AC accommodation and ${formatMoney(Math.round(university.hostelFeePerYearINR * 0.78))} per year for standard Non-AC rooms, inclusive of meals, Wi-Fi, and 24×7 security.`,
+      },
+      {
+        category: "Food & Dining",
+        question: `What kind of food is served in the campus mess for Nepali and international students?`,
+        answer: `The university dining halls provide freshly prepared vegetarian and non-vegetarian meals (breakfast, lunch, evening refreshments, and dinner). The menu includes North & South Indian, Nepali/SAARC-familiar staple dishes (dal, bhat, seasonal vegetables, curries), and continental options.`,
+      },
+      {
+        category: "International Admission",
+        question: `Do international or Nepali students need to appear for JEE or Indian entrance exams?`,
+        answer: `For most undergraduate and postgraduate engineering, management, pharmacy, and IT degrees under the International / SAARC student quota, admission is granted directly based on Grade 12 or undergraduate academic transcripts without requiring JEE Main. Statutory medical degrees (such as MBBS) require NEET qualification as per NMC regulations.`,
+      },
+      {
+        category: "Visa Requirements",
+        question: `Do students from Nepal and Bhutan require a student visa to study at ${university.name}?`,
+        answer: `Under bilateral friendship treaties with India, citizens of Nepal and Bhutan do not require a visa to study in India—they only need a valid Passport or National Citizenship Certificate. Students from all other 50+ countries receive an official University Bonafide / Visa Support Letter to apply for an Indian Student Visa (S-Visa) online.`,
+      },
+      {
+        category: "Required Documents",
+        question: `What documents are required to get a Provisional Offer Letter?`,
+        answer: `You need scanned copies of: (1) Grade 10 Marksheet & Certificate, (2) Grade 12 Transcripts & Provisional/Migration Certificate (or Bachelor's transcripts for PG), (3) Valid Passport or National Citizenship ID, and (4) Passport-size photograph. For technical/healthcare programmes, Nepali students can use the Offer Letter to obtain their MoEST No Objection Certificate (NOC).`,
+      },
+      {
+        category: "Application Deadlines",
+        question: `When should I apply for the upcoming academic intake?`,
+        answer: `Applications for the 2027–28 academic intake are currently open. International students are advised to apply early (between January and July) to secure preferred hostel rooms and early-bird merit scholarship quotas before seats fill up.`,
+      },
+      {
+        category: "Refund Policies",
+        question: `What is the university's fee refund policy if a student withdraws admission?`,
+        answer: `${university.name} follows the official University Grants Commission (UGC) fee refund guidelines. Any seat registration or tuition fee refund is processed directly according to statutory UGC timelines prior to the commencement of classes.`,
+      },
+      {
+        category: "Placement Opportunities",
+        question: `Can international students participate in campus placements and internships?`,
+        answer: `Yes. International and regional students at ${university.name} have full access to the university's Training & Placement Cell, mandatory industry internships, hospital clinical rotations, resume workshops, and on-campus recruitment drives.`,
+      },
+    ],
+    [
+      university.name,
+      university.city,
+      university.state,
+      university.establishedYear,
+      university.nirfRank,
+      university.scholarshipAvailable,
+      university.hostelFeePerYearINR,
+      naacBadgeLabel,
+      minAnnualTuitionINR,
+      currency,
+    ]
+  );
+
+  const cleanPhoneForWhatsApp = university.contactPhone.replace(/[^0-9]/g, "") || "911204570000";
+  const whatsappUrl = `https://wa.me/${cleanPhoneForWhatsApp}?text=${encodeURIComponent(
+    `Hello StudyIndia Admissions Desk, I am interested in applying to ${university.name} (${university.city}) for the 2027-28 intake. Please share course fee and scholarship details.`
+  )}`;
+
+  const handleCallbackSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCallbackSubmitted(true);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#F8FAFC] text-[#475569] pb-28 lg:pb-20 font-sans">
+      {/* ══════════════════════════════════════════════════════════════════════
+          SECTION 2: UNIVERSITY HERO SECTION
+         ══════════════════════════════════════════════════════════════════════ */}
+      <section className="bg-white border-b border-[#E2E8F0] pt-5 pb-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Top Breadcrumb + Global Currency Switcher */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-5 border-b border-[#E2E8F0]">
+            <nav
+              aria-label="Breadcrumb"
+              className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-slate-500"
+            >
               <Link
                 href="/"
-                className="hover:text-emerald-700 transition-colors flex items-center gap-1.5 text-slate-600"
+                className="hover:text-[#009B70] transition-colors inline-flex items-center gap-1 text-slate-600"
               >
-                <Home className="w-3.5 h-3.5 text-emerald-600" />
+                <Home className="w-3.5 h-3.5 text-[#009B70]" />
                 <span>Home</span>
               </Link>
               <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
               <Link
                 href="/universities"
-                className="hover:text-emerald-700 transition-colors text-slate-600"
+                className="hover:text-[#009B70] transition-colors text-slate-600"
               >
-                Universities &amp; Institutions
+                Universities in India
               </Link>
               <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
-              <span className="text-slate-900 font-semibold truncate max-w-[200px] sm:max-w-none">
+              <span className="text-[#111827] font-semibold truncate max-w-[220px] sm:max-w-none">
                 {university.name}
               </span>
             </nav>
 
-            {/* Ultra-Clean Glass Currency Switcher */}
-            <div className="flex items-center gap-2 bg-white/90 backdrop-blur-md border border-slate-200/90 rounded-full p-1 shadow-[0_2px_10px_-3px_rgba(15,23,42,0.06)]">
-              <span className="text-[11px] font-semibold text-slate-500 pl-3 hidden sm:inline">
-                Select Currency:
+            {/* Currency Switcher */}
+            <div className="flex items-center gap-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-1">
+              <span className="text-[11px] font-semibold text-slate-500 pl-2.5 hidden sm:inline">
+                Display Currency:
               </span>
               {(["INR", "USD", "NPR"] as CurrencyCode[]).map((code) => {
                 const active = currency === code;
@@ -347,10 +994,10 @@ export function UniversityDetailClient({
                     key={code}
                     type="button"
                     onClick={() => setCurrency(code)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                       active
-                        ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-xs"
-                        : "text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/60"
+                        ? "bg-[#009B70] text-white shadow-2xs"
+                        : "text-slate-600 hover:text-[#111827] hover:bg-white"
                     }`}
                   >
                     {label}
@@ -360,312 +1007,313 @@ export function UniversityDetailClient({
             </div>
           </div>
 
-          {/* ── MAIN HERO SHOWCASE CARD ── */}
-          <div className="mt-8 relative rounded-[32px] bg-white/85 backdrop-blur-2xl border border-white/90 ring-1 ring-slate-900/[0.06] shadow-[0_25px_70px_-15px_rgba(15,23,42,0.08)] p-6 sm:p-8 lg:p-10 overflow-hidden">
-            {/* Subtle top-left corner radial sheen */}
-            <div className="absolute -top-24 -left-24 w-72 h-72 bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-transparent rounded-full blur-2xl pointer-events-none" />
+          {/* Two-Column Hero Layout */}
+          <div className="mt-7 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+            {/* LEFT COLUMN (7 Cols): Information Hierarchy */}
+            <div className="lg:col-span-7 space-y-5">
+              {/* Accreditation, Recognition & Ranking Badges */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ECFDF5] border border-emerald-200 text-[#007A59] text-xs font-bold">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#009B70]" />
+                  {naacBadgeLabel}
+                </span>
 
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-              {/* LEFT 7 COLUMNS: Editorial Identity, Credentials & Value Props */}
-              <div className="lg:col-span-7 space-y-6">
-                {/* Precision Glassmorphic Credential Pills */}
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-emerald-50 to-teal-50/80 border border-emerald-200/90 text-emerald-800 text-xs font-bold shadow-2xs">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600" />
-                    </span>
-                    {naacBadgeLabel}
+                {university.nirfRank && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold">
+                    <Award className="w-3.5 h-3.5 text-amber-600" />
+                    NIRF National Rank #{university.nirfRank}
                   </span>
+                )}
 
-                  {university.nirfRank && (
-                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-50/90 border border-amber-200/90 text-amber-900 text-xs font-bold shadow-2xs">
-                      <Award className="w-3.5 h-3.5 text-amber-600" />
-                      NIRF National Rank #{university.nirfRank}
-                    </span>
-                  )}
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F8FAFC] border border-[#E2E8F0] text-slate-700 text-xs font-semibold">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#009B70]" />
+                  UGC Recognised • AIU Member
+                </span>
 
-                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-50 border border-slate-200/90 text-slate-700 text-xs font-semibold shadow-2xs">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                    UGC Recognized • AIU Member
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white border border-[#E2E8F0] text-[#111827] text-xs font-bold">
+                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                  {university.rating.toFixed(1)} / 5.0
+                </span>
+              </div>
+
+              {/* University Name, Location (City, State, Country) & Established Year */}
+              <div className="space-y-2.5">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#111827] tracking-tight font-heading leading-tight">
+                  {university.name}
+                </h1>
+
+                <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-xs sm:text-sm text-slate-600">
+                  <span className="inline-flex items-center gap-1.5 font-semibold text-[#111827]">
+                    <MapPin className="w-4 h-4 text-[#009B70] shrink-0" />
+                    {university.city}, {university.state}, India
                   </span>
-
-                  <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white border border-slate-200/90 text-slate-800 text-xs font-bold shadow-2xs">
-                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                    {university.rating.toFixed(1)}
+                  <span className="text-slate-300 hidden sm:inline">|</span>
+                  <span className="inline-flex items-center gap-1.5 font-medium text-slate-600">
+                    <Building2 className="w-4 h-4 text-slate-400 shrink-0" />
+                    Established {university.establishedYear} ({Math.max(1, 2026 - university.establishedYear)}+ Years of Academic Heritage)
                   </span>
-                </div>
-
-                {/* University Title + Location & Heritage Pill Strip */}
-                <div className="space-y-3.5">
-                  <h1 className="text-3xl sm:text-4xl lg:text-[44px] font-extrabold text-slate-900 tracking-tight font-heading leading-[1.12]">
-                    {university.name}
-                  </h1>
-
-                  <div className="flex flex-wrap items-center gap-2.5 text-xs sm:text-sm">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-50/80 border border-emerald-200/70 font-semibold text-emerald-800">
-                      <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      {university.city}, {university.state}
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-100/80 border border-slate-200/70 font-medium text-slate-700">
-                      <Building2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                      Est. {university.establishedYear} • {university.campusSize} Campus
-                    </span>
-                  </div>
-                </div>
-
-                {/* Refined Editorial Description */}
-                <p className="text-sm sm:text-[15.5px] text-slate-600 leading-relaxed font-normal max-w-2xl">
-                  {university.description}
-                </p>
-
-                {/* 3 Elevated Glassmorphic Feature Pods */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                  <div className="group flex items-center gap-3 bg-gradient-to-b from-white to-slate-50/60 hover:from-emerald-50/40 hover:to-white border border-slate-200/90 hover:border-emerald-300 rounded-2xl p-3.5 shadow-[0_2px_10px_-4px_rgba(15,23,42,0.05)] transition-all duration-200">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
-                      <BadgeCheck className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <span className="text-xs font-bold text-slate-900 block leading-tight">
-                        Direct Offer Letter
-                      </span>
-                      <span className="text-[11px] text-slate-500 font-medium block mt-0.5">
-                        In 7–10 Working Days
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="group flex items-center gap-3 bg-gradient-to-b from-white to-slate-50/60 hover:from-emerald-50/40 hover:to-white border border-slate-200/90 hover:border-emerald-300 rounded-2xl p-3.5 shadow-[0_2px_10px_-4px_rgba(15,23,42,0.05)] transition-all duration-200">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
-                      <Sparkles className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <span className="text-xs font-bold text-slate-900 block leading-tight">
-                        Up to 50% Waiver
-                      </span>
-                      <span className="text-[11px] text-slate-500 font-medium block mt-0.5">
-                        Merit Scholarships
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="group flex items-center gap-3 bg-gradient-to-b from-white to-slate-50/60 hover:from-emerald-50/40 hover:to-white border border-slate-200/90 hover:border-emerald-300 rounded-2xl p-3.5 shadow-[0_2px_10px_-4px_rgba(15,23,42,0.05)] transition-all duration-200">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
-                      <Plane className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <span className="text-xs font-bold text-slate-900 block leading-tight">
-                        Student e-Visa &amp; FRRO
-                      </span>
-                      <span className="text-[11px] text-slate-500 font-medium block mt-0.5">
-                        Step-by-Step Support
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Executive Action CTA Row */}
-                <div className="flex flex-wrap items-center gap-3.5 pt-2">
-                  <Link href={`/register?universityId=${university.id}`}>
-                    <Button
-                      size="lg"
-                      className="h-12 px-7 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold text-sm shadow-[0_10px_25px_-6px_rgba(5,150,105,0.45)] hover:shadow-[0_14px_30px_-6px_rgba(5,150,105,0.55)] transition-all duration-200 hover:-translate-y-0.5 gap-2 cursor-pointer"
-                    >
-                      <span>Apply for 2027–28 Intake</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </Button>
-                  </Link>
-
-                  <a
-                    href="#scholarship-calculator"
-                    className="inline-flex items-center gap-2 h-12 px-5 rounded-xl bg-white hover:bg-emerald-50/60 border border-slate-200/90 hover:border-emerald-300 text-slate-700 hover:text-emerald-800 font-semibold text-sm shadow-2xs transition-all duration-200 hover:-translate-y-0.5"
-                  >
-                    <Calculator className="w-4 h-4 text-emerald-600" />
-                    <span>Calculate My Fee &amp; Scholarship</span>
-                  </a>
                 </div>
               </div>
 
-              {/* RIGHT 5 COLUMNS: Architectural Framed Campus Showcase + Integrated Footer Dock */}
-              <div className="lg:col-span-5 relative">
-                {/* Ambient back-glow behind the image frame */}
-                <div className="absolute -inset-3 bg-gradient-to-tr from-emerald-500/15 via-teal-500/10 to-transparent rounded-[32px] blur-2xl -z-10 pointer-events-none" />
+              {/* Short University Introduction */}
+              <p className="text-sm sm:text-base text-[#475569] leading-relaxed">
+                {university.description}
+              </p>
 
-                <div className="rounded-[26px] bg-white border border-slate-200/90 shadow-[0_20px_50px_-12px_rgba(15,23,42,0.12)] p-3 space-y-3">
-                  {/* Campus Photo Viewport (Uncluttered so the photo shines!) */}
-                  <div className="relative h-64 sm:h-72 w-full rounded-2xl overflow-hidden bg-slate-100 group">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={university.image}
-                      alt={university.name}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/45 via-transparent to-slate-950/15 pointer-events-none" />
+              {/* International Student Info & Admission Availability Strip */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-[#ECFDF5]/70 border border-emerald-200/80">
+                  <div className="w-9 h-9 rounded-xl bg-[#009B70] text-white flex items-center justify-center shrink-0 mt-0.5">
+                    <Globe className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-[#111827] block">
+                      {university.nepaliStudentCount.toLocaleString()}+ International &amp; Regional Students
+                    </span>
+                    <span className="text-xs text-[#007A59] font-medium block mt-0.5">
+                      Dedicated International Student Welfare &amp; FRRO Cell
+                    </span>
+                  </div>
+                </div>
 
-                    {/* Top-Left Glass Status Pill */}
-                    <div className="absolute top-3.5 left-3.5">
-                      <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-white/80 text-slate-800 text-xs font-semibold shadow-md">
-                        <span className="relative flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600" />
-                        </span>
-                        <span>2027–28 Global Admissions Open</span>
-                      </span>
+                <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                  <div className="w-9 h-9 rounded-xl bg-white border border-[#E2E8F0] text-[#009B70] flex items-center justify-center shrink-0 mt-0.5">
+                    <BadgeCheck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-[#111827] block">
+                      2027–28 International Intake Open
+                    </span>
+                    <span className="text-xs text-slate-600 font-medium block mt-0.5">
+                      Direct transcript verification • Provisional Offer in 7–10 days
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Important Admission Highlights */}
+              <div className="space-y-2 pt-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
+                  Key Institutional &amp; Admission Highlights
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {university.highlights.slice(0, 4).map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-start gap-2 text-xs sm:text-[13px] text-[#111827] font-medium"
+                    >
+                      <CheckCircle2 className="w-4 h-4 text-[#009B70] shrink-0 mt-0.5" />
+                      <span className="leading-snug">{item}</span>
                     </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Primary CTAs */}
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <Link href={`/register?universityId=${university.id}`}>
+                  <Button
+                    size="lg"
+                    className="h-12 px-7 rounded-xl bg-[#009B70] hover:bg-[#007A59] text-white font-semibold text-sm shadow-xs gap-2 cursor-pointer"
+                  >
+                    <span>Apply Now</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => scrollToSection("scholarships")}
+                  className="inline-flex items-center gap-2 h-12 px-5 rounded-xl bg-white hover:bg-[#ECFDF5] border border-[#E2E8F0] hover:border-[#009B70]/40 text-[#111827] font-semibold text-sm transition-colors cursor-pointer"
+                >
+                  <Calculator className="w-4 h-4 text-[#009B70]" />
+                  <span>Calculate Fees &amp; Scholarship</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setCallbackModalOpen(true)}
+                  className="inline-flex items-center gap-2 h-12 px-4 rounded-xl bg-[#F8FAFC] hover:bg-slate-100 border border-[#E2E8F0] text-slate-700 font-semibold text-xs sm:text-sm transition-colors cursor-pointer"
+                >
+                  <Phone className="w-4 h-4 text-[#009B70]" />
+                  <span>Request Callback</span>
+                </button>
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN (5 Cols): Campus Visual Card + Quick Stats */}
+            <div className="lg:col-span-5">
+              <div className="rounded-2xl bg-white border border-[#E2E8F0] shadow-sm p-3.5 space-y-3.5">
+                {/* Large High-Quality Campus Image */}
+                <div className="relative h-64 sm:h-72 w-full rounded-xl overflow-hidden bg-slate-100">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={university.image}
+                    alt={`${university.name} Campus in ${university.city}`}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-slate-950/20 pointer-events-none" />
+
+                  {/* Admission Status Badge */}
+                  <div className="absolute top-3 left-3">
+                    <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/95 text-[#111827] text-xs font-semibold shadow-xs">
+                      <span className="w-2 h-2 rounded-full bg-[#009B70]" />
+                      Admissions Open • 2027–28 Intake
+                    </span>
                   </div>
 
-                  {/* Clean Integrated Bottom Dock (Below image so nothing blocks the campus photo!) */}
-                  <div className="grid grid-cols-2 gap-2.5 pt-0.5">
-                    <div className="flex items-center gap-3 rounded-xl bg-slate-50/90 border border-slate-200/80 px-3.5 py-3">
-                      <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                        <Users className="w-4 h-4" />
-                      </div>
-                      <div className="min-w-0">
-                        <span className="text-[11px] font-medium text-slate-500 block leading-tight">
-                          Global Community
-                        </span>
-                        <span className="text-sm sm:text-base font-bold text-slate-900 font-heading block truncate mt-0.5">
-                          {university.nepaliStudentCount.toLocaleString()}+ Students
-                        </span>
-                      </div>
-                    </div>
+                  {/* Bottom Photo Caption */}
+                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs">
+                    <span className="font-semibold truncate">
+                      {university.name}, {university.city}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection("campus-facilities")}
+                      className="px-2.5 py-1 rounded-lg bg-slate-900/75 hover:bg-slate-900 text-white font-medium text-[11px] backdrop-blur-xs transition-colors cursor-pointer shrink-0"
+                    >
+                      View Campus Photos
+                    </button>
+                  </div>
+                </div>
 
-                    <div className="flex items-center justify-between rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-4 py-3 shadow-xs">
-                      <div>
-                        <span className="text-[11px] font-medium text-emerald-100 block leading-tight">
-                          Starting Tuition
-                        </span>
-                        <span className="text-sm sm:text-base font-bold font-heading block mt-0.5">
-                          {formatMoney(
-                            allProgrammes[0]?.annualFeeINR || 140000
-                          )}
-                          <span className="text-xs font-normal text-emerald-100">
-                            /yr
-                          </span>
-                        </span>
-                      </div>
-                      <Sparkles className="w-4 h-4 text-emerald-200 shrink-0 hidden sm:block" />
+                {/* International Stats & Starting Tuition Row */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3.5">
+                    <span className="text-[11px] font-medium text-slate-500 block">
+                      International Student Cohort
+                    </span>
+                    <span className="text-base sm:text-lg font-extrabold text-[#111827] font-heading mt-0.5 block">
+                      {university.nepaliStudentCount.toLocaleString()}+ Students
+                    </span>
+                    <span className="text-[11px] text-[#007A59] font-medium block mt-0.5">
+                      Nepal, SAARC &amp; 50+ Nations
+                    </span>
+                  </div>
+
+                  <div className="rounded-xl bg-[#ECFDF5] border border-emerald-200/90 p-3.5">
+                    <span className="text-[11px] font-medium text-[#007A59] block">
+                      Starting Annual Tuition
+                    </span>
+                    <span className="text-base sm:text-lg font-extrabold text-[#111827] font-heading mt-0.5 block">
+                      {formatMoney(minAnnualTuitionINR)}
+                      <span className="text-xs font-normal text-slate-600"> / yr</span>
+                    </span>
+                    <span className="text-[11px] text-[#007A59] font-semibold block mt-0.5">
+                      {university.scholarshipAvailable
+                        ? "Up to 50% Merit Scholarship"
+                        : "Official University Rate"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Quick University Highlights Box */}
+                <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3.5 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-[#111827]">
+                      Verified Campus Snapshot
+                    </span>
+                    <span className="text-[11px] text-[#007A59] font-semibold">
+                      Direct University Partner
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-600">
+                    <div className="flex items-center gap-1.5">
+                      <Check className="w-3.5 h-3.5 text-[#009B70] shrink-0" />
+                      <span className="truncate">On-Campus AC/Non-AC Hostels</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Check className="w-3.5 h-3.5 text-[#009B70] shrink-0" />
+                      <span className="truncate">No Entrance Test (Intl. Quota)</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Check className="w-3.5 h-3.5 text-[#009B70] shrink-0" />
+                      <span className="truncate">MoEST NOC Documentation</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Check className="w-3.5 h-3.5 text-[#009B70] shrink-0" />
+                      <span className="truncate">Visa &amp; FRRO Registration Desk</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* ── INTEGRATED 5-PILLAR EXECUTIVE METRICS & QUICK-JUMP DOCK ── */}
-            <div className="mt-8 pt-7 border-t border-slate-200/80">
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5 sm:gap-4">
-                <div className="rounded-2xl bg-slate-50/80 border border-slate-200/70 p-4">
-                  <span className="text-xs font-medium text-slate-500 block">
-                    Established Year
-                  </span>
-                  <span className="text-lg sm:text-xl font-bold text-slate-900 font-heading mt-0.5 block">
-                    {university.establishedYear}
-                  </span>
-                  <span className="text-[11px] text-emerald-700 font-semibold">
-                    {Math.max(1, 2026 - university.establishedYear)}+ Years Legacy
-                  </span>
-                </div>
-
-                <div className="rounded-2xl bg-slate-50/80 border border-slate-200/70 p-4">
-                  <span className="text-xs font-medium text-slate-500 block">
-                    Campus Area
-                  </span>
-                  <span className="text-lg sm:text-xl font-bold text-slate-900 font-heading mt-0.5 block">
-                    {university.campusSize}
-                  </span>
-                  <span className="text-[11px] text-slate-500 font-medium">
-                    Residential Campus
-                  </span>
-                </div>
-
-                <div className="rounded-2xl bg-emerald-50/60 border border-emerald-200/80 p-4">
-                  <span className="text-xs font-medium text-emerald-800 block">
-                    Accreditation
-                  </span>
-                  <span className="text-lg sm:text-xl font-bold text-emerald-700 font-heading mt-0.5 block">
-                    {university.naacGrade.includes("UGC")
-                      ? "UGC Approved"
-                      : `NAAC ${university.naacGrade}`}
-                  </span>
-                  <span className="text-[11px] text-emerald-700 font-medium">
-                    Globally Valid Degrees
-                  </span>
-                </div>
-
-                <div className="rounded-2xl bg-slate-50/80 border border-slate-200/70 p-4">
-                  <span className="text-xs font-medium text-slate-500 block">
-                    Global Cohort
-                  </span>
-                  <span className="text-lg sm:text-xl font-bold text-slate-900 font-heading mt-0.5 block">
-                    {university.nepaliStudentCount.toLocaleString()}+
-                  </span>
-                  <span className="text-[11px] text-emerald-700 font-semibold">
-                    Active Intl. Students
-                  </span>
-                </div>
-
-                <div className="col-span-2 md:col-span-1 rounded-2xl bg-slate-50/80 border border-slate-200/70 p-4">
-                  <span className="text-xs font-medium text-slate-500 block">
-                    Hostel &amp; Dining
-                  </span>
-                  <span className="text-lg sm:text-xl font-bold text-slate-900 font-heading mt-0.5 block">
-                    {formatMoney(university.hostelFeePerYearINR)}
-                  </span>
-                  <span className="text-[11px] text-slate-500 font-medium">
-                    Per Year (With Meals)
-                  </span>
-                </div>
+          {/* BELOW HERO: COMPACT 6-COLUMN VERIFIED UNIVERSITY STATISTICS BAR */}
+          <div className="mt-8 pt-6 border-t border-[#E2E8F0]">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3.5">
+                <span className="text-[11px] font-medium text-slate-500 block">
+                  Established Year
+                </span>
+                <span className="text-base sm:text-lg font-bold text-[#111827] font-heading mt-0.5 block">
+                  {university.establishedYear}
+                </span>
+                <span className="text-[11px] text-slate-500">
+                  {Math.max(1, 2026 - university.establishedYear)}+ Years Legacy
+                </span>
               </div>
 
-              {/* Section Quick-Jump Bar */}
-              <div className="mt-5 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  {[
-                    {
-                      href: "#programmes",
-                      label: "Academic Programmes",
-                      icon: BookOpen,
-                    },
-                    {
-                      href: "#scholarship-calculator",
-                      label: "Fee & Scholarship Calculator",
-                      icon: Calculator,
-                    },
-                    {
-                      href: "#why-choose",
-                      label: "Campus Highlights",
-                      icon: Sparkles,
-                    },
-                    {
-                      href: "#infrastructure",
-                      label: "Hostel & Facilities",
-                      icon: Building2,
-                    },
-                    {
-                      href: "#recognition",
-                      label: "Official Recognition",
-                      icon: ShieldCheck,
-                    },
-                  ].map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <a
-                        key={item.href}
-                        href={item.href}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50/70 text-slate-600 hover:text-emerald-800 border border-slate-200/80 hover:border-emerald-300 text-xs font-semibold transition-all duration-200"
-                      >
-                        <Icon className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>{item.label}</span>
-                      </a>
-                    );
-                  })}
-                </div>
+              <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3.5">
+                <span className="text-[11px] font-medium text-slate-500 block">
+                  Campus Area
+                </span>
+                <span className="text-base sm:text-lg font-bold text-[#111827] font-heading mt-0.5 block">
+                  {university.campusSize || "Not Available"}
+                </span>
+                <span className="text-[11px] text-slate-500">
+                  Integrated Campus
+                </span>
+              </div>
 
-                <span className="text-xs text-slate-500 hidden lg:inline">
-                  Displaying fees in{" "}
-                  <strong className="text-emerald-700 font-semibold">
-                    {currency}
-                  </strong>
+              <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3.5">
+                <span className="text-[11px] font-medium text-slate-500 block">
+                  Total Student Population
+                </span>
+                <span className="text-base sm:text-lg font-bold text-[#111827] font-heading mt-0.5 block">
+                  {university.totalStudents || "Multi-Faculty"}
+                </span>
+                <span className="text-[11px] text-slate-500">
+                  {university.totalStudents ? "Enrolled Cohort" : "UG, PG & Doctoral"}
+                </span>
+              </div>
+
+              <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3.5">
+                <span className="text-[11px] font-medium text-slate-500 block">
+                  International Students
+                </span>
+                <span className="text-base sm:text-lg font-bold text-[#007A59] font-heading mt-0.5 block">
+                  {university.nepaliStudentCount.toLocaleString()}+
+                </span>
+                <span className="text-[11px] text-slate-500">
+                  Regional &amp; Global Cohort
+                </span>
+              </div>
+
+              <div className="rounded-xl bg-[#ECFDF5]/70 border border-emerald-200 p-3.5">
+                <span className="text-[11px] font-medium text-[#007A59] block">
+                  Accreditation
+                </span>
+                <span className="text-base sm:text-lg font-bold text-[#007A59] font-heading mt-0.5 block">
+                  {university.naacGrade.includes("UGC")
+                    ? "UGC Approved"
+                    : `NAAC ${university.naacGrade}`}
+                </span>
+                <span className="text-[11px] text-[#007A59]">
+                  {university.nirfRank ? `NIRF Rank #${university.nirfRank}` : "Statutory Recognition"}
+                </span>
+              </div>
+
+              <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3.5">
+                <span className="text-[11px] font-medium text-slate-500 block">
+                  Available Programmes
+                </span>
+                <span className="text-base sm:text-lg font-bold text-[#111827] font-heading mt-0.5 block">
+                  {allProgrammes.length} Programmes
+                </span>
+                <span className="text-[11px] text-slate-500">
+                  Open for 2027–28
                 </span>
               </div>
             </div>
@@ -673,774 +1321,2017 @@ export function UniversityDetailClient({
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════════════
-          2. MAIN CONTENT + CLEAN ADMISSIONS CONCIERGE SIDEBAR
-         ══════════════════════════════════════════════════════════════════ */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+      {/* ══════════════════════════════════════════════════════════════════════
+          SECTION 3: STICKY UNIVERSITY NAVIGATION BAR
+         ══════════════════════════════════════════════════════════════════════ */}
+      <div className="sticky top-16 z-30 bg-white/95 backdrop-blur-xs border-b border-[#E2E8F0] shadow-2xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between gap-4">
+            <nav
+              aria-label="University section navigation"
+              className="flex items-center gap-1 overflow-x-auto py-2.5 no-scrollbar"
+            >
+              {NAV_SECTIONS.map((sec) => {
+                const isActive = activeSection === sec.id;
+                return (
+                  <button
+                    key={sec.id}
+                    type="button"
+                    onClick={() => scrollToSection(sec.id)}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-[#009B70] text-white shadow-2xs"
+                        : "text-slate-600 hover:text-[#111827] hover:bg-[#F8FAFC]"
+                    }`}
+                  >
+                    {sec.label}
+                  </button>
+                );
+              })}
+            </nav>
+
+            <div className="hidden xl:flex items-center gap-2 shrink-0">
+              <Link href={`/register?universityId=${university.id}`}>
+                <Button
+                  size="sm"
+                  className="h-8 px-3.5 rounded-lg bg-[#009B70] hover:bg-[#007A59] text-white font-semibold text-xs cursor-pointer"
+                >
+                  Apply Online
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          MAIN TWO-COLUMN WORKSPACE (8 Cols Content + 4 Cols Sticky Sidebar)
+         ══════════════════════════════════════════════════════════════════════ */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* LEFT 8 COLUMNS */}
-          <div className="lg:col-span-8 space-y-8">
-            {/* ── SECTION A: ACADEMIC PROGRAMMES & FEE EXPLORER ── */}
+          {/* LEFT 8 COLUMNS: COMPREHENSIVE SECTIONS */}
+          <div className="lg:col-span-8 space-y-10">
+            {/* ────────────────────────────────────────────────────────────────
+                SECTION 4: ABOUT THE UNIVERSITY (#overview)
+               ──────────────────────────────────────────────────────────────── */}
+            <section
+              id="overview"
+              className="scroll-mt-32 bg-white rounded-2xl border border-[#E2E8F0] shadow-2xs p-6 sm:p-8 space-y-6"
+            >
+              <div className="border-b border-[#E2E8F0] pb-4">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#007A59] bg-[#ECFDF5] border border-emerald-200 px-3 py-1 rounded-full mb-2">
+                  <Building2 className="w-3.5 h-3.5" />
+                  About the University
+                </span>
+                <h2 className="text-xl sm:text-2xl font-bold text-[#111827] font-heading">
+                  Institutional Profile &amp; Academic Overview
+                </h2>
+              </div>
+
+              {/* Balanced Two-Column Layout */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                <div className="md:col-span-7 space-y-4 text-sm text-[#475569] leading-relaxed">
+                  <p className="text-[#111827] font-medium">
+                    {university.description}
+                  </p>
+                  <p>
+                    Established in <strong>{university.establishedYear}</strong> in{" "}
+                    <strong>
+                      {university.city}, {university.state}
+                    </strong>
+                    , {university.name} operates across a{" "}
+                    <strong>{university.campusSize}</strong> campus designed to
+                    integrate classroom instruction, laboratory research, and
+                    industry collaboration. The institution currently hosts{" "}
+                    <strong>
+                      {university.nepaliStudentCount.toLocaleString()}+ international and regional students
+                    </strong>
+                    , offering structured undergraduate, postgraduate, and doctoral pathways.
+                  </p>
+
+                  {aboutExpanded && (
+                    <div className="space-y-3 pt-2 border-t border-slate-100">
+                      <div>
+                        <h3 className="text-sm font-bold text-[#111827]">
+                          Academic Environment &amp; Teaching Methodology
+                        </h3>
+                        <p className="text-xs sm:text-sm text-[#475569] mt-1">
+                          Programmes follow the University Grants Commission (UGC) Choice Based Credit System (CBCS) and Outcome-Based Education (OBE) curriculum. Instruction is delivered entirely in English through a combination of theory lectures, laboratory practicums, industry case studies, and mandatory final-year projects or clinical rotations.
+                        </p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-[#111827]">
+                          Campus Environment &amp; International Integration
+                        </h3>
+                        <p className="text-xs sm:text-sm text-[#475569] mt-1">
+                          The residential campus provides a secure, multicultural academic environment with dedicated international student advisors, equivalence documentation support for SAARC boards (including NEB Nepal), and structured career readiness training.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => setAboutExpanded((prev) => !prev)}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#009B70] hover:text-[#007A59] cursor-pointer"
+                  >
+                    <span>
+                      {aboutExpanded
+                        ? "Show Less Details"
+                        : "Read More About Teaching Methodology & Campus Life"}
+                    </span>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${
+                        aboutExpanded ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Right Column: Campus Visual & Key Facts Card */}
+                <div className="md:col-span-5 space-y-4">
+                  <div className="rounded-xl overflow-hidden border border-[#E2E8F0] bg-[#F8FAFC]">
+                    <div className="h-40 w-full overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={university.image}
+                        alt={university.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="p-4 space-y-2.5 text-xs">
+                      <div className="font-bold text-[#111827] text-sm">
+                        Quick Institutional Facts
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-slate-200/70">
+                        <span className="text-slate-500">Medium of Instruction:</span>
+                        <span className="font-semibold text-[#111827]">100% English</span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-slate-200/70">
+                        <span className="text-slate-500">Statutory Status:</span>
+                        <span className="font-semibold text-[#111827]">UGC Recognised</span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-slate-200/70">
+                        <span className="text-slate-500">Quality Grade:</span>
+                        <span className="font-semibold text-[#007A59]">{naacBadgeLabel}</span>
+                      </div>
+                      <div className="flex justify-between py-1">
+                        <span className="text-slate-500">Campus Type:</span>
+                        <span className="font-semibold text-[#111827]">{university.campusSize} Residential</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Major Achievements & What Makes This University Different */}
+              <div className="pt-4 border-t border-[#E2E8F0] space-y-3">
+                <h3 className="text-sm font-bold text-[#111827]">
+                  Major Achievements &amp; What Makes {university.name} Stand Out
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {university.highlights.map((highlight, index) => (
+                    <div
+                      key={index}
+                      className="flex items-start gap-3 p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-[#ECFDF5] border border-emerald-200 text-[#009B70] flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
+                        {index + 1}
+                      </div>
+                      <p className="text-xs sm:text-sm text-[#111827] font-medium leading-relaxed">
+                        {highlight}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* ────────────────────────────────────────────────────────────────
+                SECTION 5: COURSES & PROGRAMMES (#programmes)
+               ──────────────────────────────────────────────────────────────── */}
             <section
               id="programmes"
-              className="scroll-mt-24 bg-white rounded-2xl border border-slate-200/90 shadow-xs p-6 sm:p-8 space-y-6"
+              className="scroll-mt-32 bg-white rounded-2xl border border-[#E2E8F0] shadow-2xs p-6 sm:p-8 space-y-6"
             >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#E2E8F0] pb-5">
                 <div>
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-3 py-1 rounded-full mb-2">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#007A59] bg-[#ECFDF5] border border-emerald-200 px-3 py-1 rounded-full mb-2">
                     <GraduationCap className="w-3.5 h-3.5" />
-                    Academic Programmes
+                    Courses &amp; Programmes Directory
                   </span>
-                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900 font-heading">
-                    Degrees &amp; Annual Tuition Fees
+                  <h2 className="text-xl sm:text-2xl font-bold text-[#111827] font-heading">
+                    Accredited Degree Programmes &amp; Tuition Fees
                   </h2>
-                  <p className="text-sm text-slate-600 mt-0.5">
-                    Select a stream below to view programme duration, eligibility, and annual fees in{" "}
-                    <strong className="text-slate-800">{currency}</strong>.
+                  <p className="text-xs sm:text-sm text-[#475569] mt-1">
+                    Search or filter programmes by discipline. Select up to 3 programmes to compare fees and eligibility side-by-side.
                   </p>
                 </div>
 
                 {/* Currency Switcher */}
-                <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl self-start sm:self-auto">
-                  {(["INR", "USD", "NPR"] as CurrencyCode[]).map((code) => (
-                    <button
-                      key={code}
-                      type="button"
-                      onClick={() => setCurrency(code)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                        currency === code
-                          ? "bg-white text-emerald-700 shadow-2xs"
-                          : "text-slate-600 hover:text-slate-900"
-                      }`}
-                    >
-                      {code === "INR" ? "₹ INR" : code === "USD" ? "$ USD" : "NPR"}
-                    </button>
-                  ))}
+                <div className="flex flex-col sm:items-end gap-1 shrink-0">
+                  <span className="text-[11px] font-medium text-slate-500">
+                    Select Currency:
+                  </span>
+                  <div className="flex items-center gap-1 bg-[#F8FAFC] border border-[#E2E8F0] p-1 rounded-xl">
+                    {(["INR", "USD", "NPR"] as CurrencyCode[]).map((code) => (
+                      <button
+                        key={code}
+                        type="button"
+                        onClick={() => setCurrency(code)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                          currency === code
+                            ? "bg-[#009B70] text-white shadow-2xs"
+                            : "text-slate-600 hover:text-[#111827]"
+                        }`}
+                      >
+                        {code === "INR" ? "₹ INR" : code === "USD" ? "$ USD" : "NPR"}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {/* Stream Filter Pills */}
-              <div className="flex flex-wrap items-center gap-2">
-                {streamCategories.map((stream) => {
-                  const active = selectedStream === stream;
+              {/* Search Bar + Compare Counter */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={courseSearchQuery}
+                    onChange={(e) => setCourseSearchQuery(e.target.value)}
+                    placeholder="Search by course name, degree (e.g. B.Tech, MBA, Nursing) or career..."
+                    className="w-full h-10 pl-10 pr-9 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs sm:text-sm text-[#111827] placeholder:text-slate-400 focus:outline-none focus:border-[#009B70] focus:bg-white transition-colors"
+                  />
+                  {courseSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setCourseSearchQuery("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                {compareIds.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowCompareModal(true)}
+                    className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-[#ECFDF5] border border-[#009B70] text-[#007A59] text-xs font-bold cursor-pointer shrink-0"
+                  >
+                    <Scale className="w-4 h-4" />
+                    <span>Compare Selected ({compareIds.length}/3)</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Discipline Filter Pills */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                {DISCIPLINE_FILTERS.map((disc) => {
+                  const active = selectedDiscipline === disc;
                   return (
                     <button
-                      key={stream}
+                      key={disc}
                       type="button"
-                      onClick={() => setSelectedStream(stream)}
-                      className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
+                      onClick={() => setSelectedDiscipline(disc)}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer border ${
                         active
-                          ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs"
-                          : "bg-slate-50 text-slate-600 border-slate-200/80 hover:border-emerald-300 hover:text-slate-900"
+                          ? "bg-[#009B70] text-white border-[#009B70] shadow-2xs"
+                          : "bg-[#F8FAFC] text-slate-600 border-[#E2E8F0] hover:border-[#009B70]/50 hover:text-[#111827]"
                       }`}
                     >
-                      {stream}
+                      {disc}
                     </button>
                   );
                 })}
               </div>
 
+              {/* Exchange Rate Transparency Notice */}
+              {currency !== "INR" && (
+                <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs text-slate-600">
+                  <Info className="w-4 h-4 text-[#009B70] shrink-0" />
+                  <span>
+                    Showing indicative converted amounts in <strong>{currency}</strong> (Reference rate:{" "}
+                    {currency === "NPR" ? "1 INR = 1.60 NPR" : "1 USD ≈ 83.5 INR"}). Official university fee invoices are issued in INR.
+                  </span>
+                </div>
+              )}
+
               {/* Programme Cards List */}
-              <div className="grid grid-cols-1 gap-4">
-                {filteredProgrammes.map((prog) => (
-                  <div
-                    key={prog.id}
-                    className="group rounded-2xl border border-slate-200/90 hover:border-emerald-300 bg-white hover:bg-emerald-50/20 p-5 sm:p-6 transition-all duration-200"
+              {filteredProgrammes.length === 0 ? (
+                <div className="text-center py-10 px-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-2">
+                  <p className="text-sm font-bold text-[#111827]">
+                    No programmes matched your search filter.
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    Try clearing the search query or switching to &ldquo;All Programmes&rdquo;.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedDiscipline("All Programmes");
+                      setCourseSearchQuery("");
+                    }}
+                    className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#009B70] text-white text-xs font-semibold cursor-pointer"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-                      <div className="space-y-2 max-w-xl">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-xs font-semibold">
-                            {prog.degree}
-                          </span>
-                          <span className="px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-600 text-xs font-medium flex items-center gap-1">
-                            <Clock className="w-3 h-3 text-slate-400" />
-                            {prog.duration}
-                          </span>
-                          <span className="px-2.5 py-0.5 rounded-md bg-teal-50 text-teal-800 border border-teal-200/70 text-xs font-medium">
-                            {prog.scholarshipNote}
-                          </span>
-                        </div>
+                    Reset Filters
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4">
+                  {filteredProgrammes.map((prog) => {
+                    const isCompared = compareIds.includes(prog.id);
+                    const estAfterScholarshipINR = university.scholarshipAvailable
+                      ? Math.round(prog.annualFeeINR * 0.7) // 30% standard merit tier preview
+                      : prog.annualFeeINR;
 
-                        <h3 className="text-base sm:text-lg font-bold text-slate-900 group-hover:text-emerald-700 transition-colors font-heading">
-                          {prog.courseLink ? (
-                            <Link href={prog.courseLink}>{prog.title}</Link>
-                          ) : (
-                            prog.title
-                          )}
-                        </h3>
-
-                        <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                          <span className="font-semibold text-slate-700">
-                            Eligibility:
-                          </span>{" "}
-                          {prog.eligibility}
-                        </p>
-
-                        {/* Career Pills */}
-                        <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                          <span className="text-xs text-slate-500 mr-1">
-                            Career Paths:
-                          </span>
-                          {prog.careers.map((career, idx) => (
-                            <span
-                              key={idx}
-                              className="px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-600 text-xs font-medium"
-                            >
-                              {career}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Right Tuition & Apply CTA */}
-                      <div className="flex sm:flex-col items-center sm:items-end justify-between gap-3 pt-4 sm:pt-0 border-t sm:border-t-0 border-slate-100 shrink-0">
-                        <div className="sm:text-right">
-                          <span className="text-xs text-slate-500 block">
-                            Annual Tuition Fee
-                          </span>
-                          <div className="text-xl sm:text-2xl font-bold text-slate-900 font-heading">
-                            {formatMoney(prog.annualFeeINR)}
-                            <span className="text-xs font-normal text-slate-500">
-                              {" "}
-                              / year
-                            </span>
-                          </div>
-                          <span className="text-xs font-medium text-emerald-700 block mt-0.5">
-                            With 30% Scholarship:{" "}
-                            {formatMoney(Math.round(prog.annualFeeINR * 0.7))}/yr
-                          </span>
-                        </div>
-
-                        <Link
-                          href={
-                            prog.courseLink
-                              ? `/register?courseId=${prog.id}&universityId=${university.id}`
-                              : `/register?universityId=${university.id}`
-                          }
-                        >
-                          <Button
-                            size="sm"
-                            className="h-9 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs gap-1.5 transition-colors cursor-pointer"
-                          >
-                            <span>Apply Now</span>
-                            <ArrowRight className="w-3.5 h-3.5" />
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* ── SECTION B: CLEAN, LIGHT SCHOLARSHIP & COST ESTIMATOR ── */}
-            <section
-              id="scholarship-calculator"
-              className="scroll-mt-24 rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/50 via-white to-teal-50/30 p-6 sm:p-8 shadow-xs space-y-6"
-            >
-              <div className="border-b border-slate-200/70 pb-5">
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-3 py-1 rounded-full mb-2">
-                  <Calculator className="w-3.5 h-3.5" />
-                  Interactive Fee &amp; Scholarship Calculator
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 font-heading">
-                  Estimate Your Annual Fee &amp; Scholarship
-                </h2>
-                <p className="text-sm text-slate-600 mt-0.5">
-                  Choose your preferred programme and high school score to see your estimated annual tuition and hostel fee.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-                {/* Left Controls (7 cols) */}
-                <div className="md:col-span-7 space-y-5">
-                  {/* Step 1: Select Programme */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700 block">
-                      1. Select Academic Programme
-                    </label>
-                    <select
-                      value={calcProgrammeIdx}
-                      onChange={(e) =>
-                        setCalcProgrammeIdx(Number(e.target.value))
-                      }
-                      className="w-full h-11 px-3.5 rounded-xl bg-white border border-slate-300 text-slate-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-600"
-                    >
-                      {allProgrammes.map((p, idx) => (
-                        <option key={p.id} value={idx}>
-                          {p.degree} — {p.title} ({formatMoney(p.annualFeeINR)}/yr)
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Step 2: Select Academic Score Bracket */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700 block">
-                      2. Your High School GPA or Percentage
-                    </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {SCHOLARSHIP_TIERS.map((tier) => {
-                        const active = selectedScholarshipId === tier.id;
-                        return (
-                          <button
-                            key={tier.id}
-                            type="button"
-                            onClick={() => setSelectedScholarshipId(tier.id)}
-                            className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${
-                              active
-                                ? "bg-emerald-50/90 border-emerald-600 text-slate-900 shadow-2xs"
-                                : "bg-white border-slate-200/90 text-slate-700 hover:border-emerald-300"
-                            }`}
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="text-xs font-bold text-slate-900">
-                                {tier.label}
+                    return (
+                      <div
+                        key={prog.id}
+                        className={`rounded-2xl border p-5 sm:p-6 transition-all ${
+                          isCompared
+                            ? "border-[#009B70] bg-[#ECFDF5]/25"
+                            : "border-[#E2E8F0] hover:border-[#009B70]/50 bg-white"
+                        }`}
+                      >
+                        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-5">
+                          {/* Left Programme Info */}
+                          <div className="space-y-3 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="px-2.5 py-0.5 rounded-md bg-[#ECFDF5] text-[#007A59] border border-emerald-200 text-xs font-bold">
+                                {prog.degree}
                               </span>
-                              <span
-                                className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                                  tier.discountPercent > 0
-                                    ? "bg-emerald-600 text-white"
-                                    : "bg-slate-100 text-slate-600"
+                              <span className="px-2.5 py-0.5 rounded-md bg-[#F8FAFC] border border-[#E2E8F0] text-slate-600 text-xs font-medium inline-flex items-center gap-1">
+                                <Clock className="w-3 h-3 text-slate-400" />
+                                {prog.duration}
+                              </span>
+                              <span className="px-2.5 py-0.5 rounded-md bg-[#F8FAFC] border border-[#E2E8F0] text-slate-600 text-xs font-medium">
+                                {prog.filterCategory}
+                              </span>
+                              {prog.scholarshipMaxPercent > 0 && (
+                                <span className="px-2.5 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold">
+                                  {prog.scholarshipNote}
+                                </span>
+                              )}
+                            </div>
+
+                            <div>
+                              <h3 className="text-base sm:text-lg font-bold text-[#111827] font-heading">
+                                {prog.title}
+                              </h3>
+                              <p className="text-xs sm:text-sm font-medium text-[#007A59] mt-0.5">
+                                Specialisation: {prog.specialisation}
+                              </p>
+                            </div>
+
+                            <div className="text-xs sm:text-[13px] text-[#475569] space-y-1 bg-[#F8FAFC] p-3 rounded-xl border border-[#E2E8F0]">
+                              <div>
+                                <span className="font-semibold text-[#111827]">
+                                  Eligibility Criteria:
+                                </span>{" "}
+                                {prog.eligibility}
+                              </div>
+                              <div>
+                                <span className="font-semibold text-[#111827]">
+                                  Required Subjects:
+                                </span>{" "}
+                                {prog.requiredSubjects.join(", ")}
+                              </div>
+                            </div>
+
+                            {/* Career Opportunities */}
+                            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                              <span className="text-xs font-semibold text-slate-500 mr-1">
+                                Career Opportunities:
+                              </span>
+                              {prog.careers.map((career, idx) => (
+                                <span
+                                  key={idx}
+                                  className="px-2.5 py-0.5 rounded-md bg-[#F8FAFC] border border-[#E2E8F0] text-slate-600 text-xs font-medium"
+                                >
+                                  {career}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Right Tuition Breakdown & Actions */}
+                          <div className="lg:w-64 shrink-0 flex flex-col justify-between gap-4 pt-4 lg:pt-0 border-t lg:border-t-0 lg:border-l border-[#E2E8F0] lg:pl-6">
+                            <div className="space-y-1.5">
+                              <div>
+                                <span className="text-[11px] font-medium text-slate-500 block">
+                                  Annual Tuition Fee
+                                </span>
+                                <span className="text-xl font-extrabold text-[#111827] font-heading">
+                                  {formatMoney(prog.annualFeeINR)}
+                                  <span className="text-xs font-normal text-slate-500">
+                                    {" "}
+                                    / yr
+                                  </span>
+                                </span>
+                              </div>
+
+                              {university.scholarshipAvailable && (
+                                <div className="p-2.5 rounded-xl bg-[#ECFDF5] border border-emerald-200/80">
+                                  <span className="text-[11px] font-medium text-[#007A59] block">
+                                    Est. Fee After 30% Merit Waiver:
+                                  </span>
+                                  <span className="text-sm font-bold text-[#007A59]">
+                                    {formatMoney(estAfterScholarshipINR)} / year
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="space-y-2">
+                              <div className="grid grid-cols-2 gap-2">
+                                <Link
+                                  href={
+                                    prog.courseLink
+                                      ? `/register?courseId=${prog.id}&universityId=${university.id}`
+                                      : `/register?universityId=${university.id}`
+                                  }
+                                >
+                                  <Button
+                                    size="sm"
+                                    className="w-full h-9 rounded-xl bg-[#009B70] hover:bg-[#007A59] text-white font-semibold text-xs cursor-pointer"
+                                  >
+                                    Apply Now
+                                  </Button>
+                                </Link>
+
+                                <button
+                                  type="button"
+                                  onClick={() => setDetailModalProgramme(prog)}
+                                  className="h-9 px-3 rounded-xl bg-white hover:bg-[#F8FAFC] border border-[#E2E8F0] text-[#111827] font-semibold text-xs transition-colors cursor-pointer"
+                                >
+                                  View Details
+                                </button>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => toggleCompareProgramme(prog.id)}
+                                className={`w-full h-8 rounded-lg text-xs font-semibold inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer border ${
+                                  isCompared
+                                    ? "bg-[#ECFDF5] border-[#009B70] text-[#007A59]"
+                                    : "bg-[#F8FAFC] border-[#E2E8F0] text-slate-600 hover:text-[#111827]"
                                 }`}
                               >
-                                {tier.discountPercent > 0
-                                  ? `${tier.discountPercent}% Off`
-                                  : "Base Fee"}
-                              </span>
+                                <Scale className="w-3.5 h-3.5" />
+                                <span>
+                                  {isCompared ? "Added to Compare" : "Add to Compare"}
+                                </span>
+                              </button>
                             </div>
-                            <span className="text-xs text-slate-500 block mt-0.5">
-                              {tier.sublabel}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+
+            {/* ────────────────────────────────────────────────────────────────
+                SECTION 6: COMPLETE FEE STRUCTURE (#fee-structure)
+               ──────────────────────────────────────────────────────────────── */}
+            <section
+              id="fee-structure"
+              className="scroll-mt-32 bg-white rounded-2xl border border-[#E2E8F0] shadow-2xs p-6 sm:p-8 space-y-6"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#E2E8F0] pb-5">
+                <div>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#007A59] bg-[#ECFDF5] border border-emerald-200 px-3 py-1 rounded-full mb-2">
+                    <FileText className="w-3.5 h-3.5" />
+                    Transparent Fee Structure
+                  </span>
+                  <h2 className="text-xl sm:text-2xl font-bold text-[#111827] font-heading">
+                    Complete Fee Breakdown &amp; Cost Projections
+                  </h2>
+                  <p className="text-xs sm:text-sm text-[#475569] mt-1">
+                    Official university academic and hostel charges clearly separated from estimated student living expenses.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleDownloadFeeBreakdown}
+                  className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-[#ECFDF5] hover:bg-emerald-100/80 border border-emerald-200 text-[#007A59] font-semibold text-xs transition-colors cursor-pointer shrink-0 self-start sm:self-auto"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download Fee Breakdown</span>
+                </button>
+              </div>
+
+              {/* Select Programme for Fee Structure */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                <label
+                  htmlFor="fee-prog-select"
+                  className="text-xs sm:text-sm font-bold text-[#111827]"
+                >
+                  Select Programme to Inspect Fee Breakdown:
+                </label>
+                <select
+                  id="fee-prog-select"
+                  value={feeSectionProgIdx}
+                  onChange={(e) => setFeeSectionProgIdx(Number(e.target.value))}
+                  className="h-10 px-3.5 rounded-xl bg-white border border-[#E2E8F0] text-xs sm:text-sm font-semibold text-[#111827] focus:outline-none focus:border-[#009B70]"
+                >
+                  {allProgrammes.map((p, idx) => (
+                    <option key={p.id} value={idx}>
+                      {p.degree} — {p.title} ({p.duration})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 4 Fee Categories Grid (A, B, C, D) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Category A: Academic Fees */}
+                <div className="rounded-xl border border-[#E2E8F0] p-5 space-y-3 bg-white">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                    <h3 className="text-sm font-bold text-[#111827]">
+                      A. Academic Fees (Annual)
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-md bg-[#ECFDF5] text-[#007A59] text-[11px] font-semibold">
+                      Official University Charge
+                    </span>
                   </div>
-
-                  {/* Step 3: Hostel Preference */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700 block">
-                      3. Campus Hostel &amp; Dining Plan
-                    </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      <button
-                        type="button"
-                        onClick={() => setHostelType("ac")}
-                        className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                          hostelType === "ac"
-                            ? "bg-emerald-50/90 border-emerald-600 text-slate-900 shadow-2xs"
-                            : "bg-white border-slate-200/90 text-slate-700 hover:border-emerald-300"
-                        }`}
-                      >
-                        <span className="text-xs font-bold text-slate-900 block">
-                          AC International Hostel
-                        </span>
-                        <span className="text-xs text-emerald-700 font-medium">
-                          {formatMoney(university.hostelFeePerYearINR)} / year (With Meals)
-                        </span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setHostelType("standard")}
-                        className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                          hostelType === "standard"
-                            ? "bg-emerald-50/90 border-emerald-600 text-slate-900 shadow-2xs"
-                            : "bg-white border-slate-200/90 text-slate-700 hover:border-emerald-300"
-                        }`}
-                      >
-                        <span className="text-xs font-bold text-slate-900 block">
-                          Standard Non-AC Hostel
-                        </span>
-                        <span className="text-xs text-emerald-700 font-medium">
-                          {formatMoney(
-                            Math.round(university.hostelFeePerYearINR * 0.78)
-                          )}{" "}
-                          / year (With Meals)
-                        </span>
-                      </button>
+                  <div className="space-y-2 text-xs sm:text-[13px]">
+                    <div className="flex justify-between py-1">
+                      <span className="text-slate-600">Annual Tuition Fee ({selectedFeeProg?.degree}):</span>
+                      <span className="font-bold text-[#111827]">
+                        {formatMoney(officialAcademicCharges.tuitionAnnualINR)} / yr
+                      </span>
+                    </div>
+                    <div className="flex justify-between py-1">
+                      <span className="text-slate-600">University Examination Fee:</span>
+                      <span className="font-semibold text-[#111827]">
+                        {formatMoney(officialAcademicCharges.examinationAnnualINR)} / yr
+                      </span>
+                    </div>
+                    <div className="flex justify-between py-1">
+                      <span className="text-slate-600">Library, Lab &amp; Digital Access:</span>
+                      <span className="font-semibold text-[#111827]">
+                        {formatMoney(officialAcademicCharges.libraryAndLabAnnualINR)} / yr
+                      </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Right Output Breakdown Card (5 cols) */}
-                <div className="md:col-span-5 bg-white text-slate-800 rounded-2xl p-5 sm:p-6 border border-slate-200/90 shadow-sm space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <div>
-                      <span className="text-xs font-medium text-emerald-700 block">
-                        Estimated Breakdown
-                      </span>
-                      <h3 className="text-base font-bold text-slate-900 font-heading">
-                        {activeProgramme?.degree} Annual Cost
-                      </h3>
-                    </div>
-                    <span className="px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold text-xs">
-                      {activeScholarship.discountPercent}% Waiver
+                {/* Category B: Accommodation */}
+                <div className="rounded-xl border border-[#E2E8F0] p-5 space-y-3 bg-white">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                    <h3 className="text-sm font-bold text-[#111827]">
+                      B. Accommodation &amp; Mess (Annual)
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-md bg-[#ECFDF5] text-[#007A59] text-[11px] font-semibold">
+                      Official Campus Hostel
                     </span>
                   </div>
-
-                  <div className="space-y-2.5 text-xs sm:text-sm">
-                    <div className="flex items-center justify-between text-slate-600">
-                      <span>Standard Annual Tuition:</span>
-                      <span className="font-semibold text-slate-900">
-                        {formatMoney(grossTuitionINR)}
+                  <div className="space-y-2 text-xs sm:text-[13px]">
+                    <div className="flex justify-between py-1">
+                      <span className="text-slate-600">AC Hostel Room + Standard Mess:</span>
+                      <span className="font-bold text-[#111827]">
+                        {formatMoney(accommodationCharges.acHostelWithMessINR)} / yr
                       </span>
                     </div>
-
-                    <div className="flex items-center justify-between text-emerald-700 font-semibold bg-emerald-50/80 px-3 py-2 rounded-xl border border-emerald-200/60 text-xs">
-                      <span>
-                        Merit Scholarship ({activeScholarship.discountPercent}%):
-                      </span>
-                      <span>- {formatMoney(scholarshipSavingsINR)}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-slate-800 font-semibold pt-1">
-                      <span>Net Annual Tuition:</span>
-                      <span>{formatMoney(netTuitionINR)}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-slate-600 border-b border-slate-100 pb-3">
-                      <span>Hostel &amp; Dining Plan:</span>
-                      <span className="font-semibold text-slate-900">
-                        {formatMoney(activeHostelINR)}
+                    <div className="flex justify-between py-1">
+                      <span className="text-slate-600">Non-AC Hostel Room + Standard Mess:</span>
+                      <span className="font-semibold text-[#111827]">
+                        {formatMoney(accommodationCharges.nonAcHostelWithMessINR)} / yr
                       </span>
                     </div>
+                    <div className="flex justify-between py-1">
+                      <span className="text-slate-600">Included Facilities:</span>
+                      <span className="font-medium text-slate-700">
+                        Meals, Wi-Fi, Security &amp; Furniture
+                      </span>
+                    </div>
+                  </div>
+                </div>
 
-                    <div className="pt-1 flex items-baseline justify-between">
-                      <div>
-                        <span className="text-sm font-bold text-slate-900 block">
-                          Total Annual Cost
-                        </span>
-                        <span className="text-xs text-slate-500">
-                          Tuition + Hostel + Meals
-                        </span>
+                {/* Category C: Other Expenses */}
+                <div className="rounded-xl border border-[#E2E8F0] p-5 space-y-3 bg-[#F8FAFC]">
+                  <div className="flex items-center justify-between border-b border-slate-200/70 pb-2.5">
+                    <h3 className="text-sm font-bold text-[#111827]">
+                      C. Other Living Expenses (Estimated)
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-md bg-slate-200/80 text-slate-700 text-[11px] font-semibold">
+                      Indicative Student Budget
+                    </span>
+                  </div>
+                  <div className="space-y-2 text-xs sm:text-[13px]">
+                    <div className="flex justify-between py-1">
+                      <span className="text-slate-600">Books &amp; Study Materials:</span>
+                      <span className="font-semibold text-[#111827]">
+                        ~{formatMoney(estimatedLivingExpenses.booksAndMaterialsINR)} / yr
+                      </span>
+                    </div>
+                    <div className="flex justify-between py-1">
+                      <span className="text-slate-600">Personal &amp; Local Transit:</span>
+                      <span className="font-semibold text-[#111827]">
+                        ~{formatMoney(estimatedLivingExpenses.localTransportAndPersonalINR)} / yr
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 pt-1">
+                      * Not billed by the university. Actual personal expenses depend on individual student lifestyle.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Category D: One-Time Charges */}
+                <div className="rounded-xl border border-[#E2E8F0] p-5 space-y-3 bg-white">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                    <h3 className="text-sm font-bold text-[#111827]">
+                      D. One-Time Admission Charges
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-md bg-[#ECFDF5] text-[#007A59] text-[11px] font-semibold">
+                      First Year Only
+                    </span>
+                  </div>
+                  <div className="space-y-2 text-xs sm:text-[13px]">
+                    <div className="flex justify-between py-1">
+                      <span className="text-slate-600">StudyIndia Application Processing:</span>
+                      <span className="font-bold text-[#009B70]">Free (₹0)</span>
+                    </div>
+                    <div className="flex justify-between py-1">
+                      <span className="text-slate-600">University Admission &amp; Enrollment:</span>
+                      <span className="font-semibold text-[#111827]">
+                        {formatMoney(officialAcademicCharges.registrationOneTimeINR)} (One-time)
+                      </span>
+                    </div>
+                    <div className="flex justify-between py-1">
+                      <span className="text-slate-600">Refundable Caution Deposit:</span>
+                      <span className="font-semibold text-[#111827]">
+                        {formatMoney(officialAcademicCharges.refundableCautionDepositINR)} (Refundable)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4 Cost Projection Summary Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 pt-2">
+                <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-4">
+                  <span className="text-xs font-medium text-slate-500 block">
+                    First-Year Estimated Cost
+                  </span>
+                  <span className="text-lg font-extrabold text-[#111827] font-heading mt-1 block">
+                    {formatMoney(firstYearOfficialTotalINR)}
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    Incl. Tuition, AC Hostel &amp; One-Time Fees
+                  </span>
+                </div>
+
+                <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-4">
+                  <span className="text-xs font-medium text-slate-500 block">
+                    Recurring Annual Cost
+                  </span>
+                  <span className="text-lg font-extrabold text-[#111827] font-heading mt-1 block">
+                    {formatMoney(recurringAnnualOfficialINR)}
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    Year 2 Onwards (Tuition + AC Hostel)
+                  </span>
+                </div>
+
+                <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-4">
+                  <span className="text-xs font-medium text-slate-500 block">
+                    Total Programme Cost
+                  </span>
+                  <span className="text-lg font-extrabold text-[#111827] font-heading mt-1 block">
+                    {formatMoney(totalProgrammeOfficialINR)}
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    Full {selectedFeeProg?.durationYears}-Year Official Estimate
+                  </span>
+                </div>
+
+                <div className="rounded-xl bg-[#ECFDF5] border border-emerald-200 p-4">
+                  <span className="text-xs font-semibold text-[#007A59] block">
+                    Scholarship-Adjusted Cost
+                  </span>
+                  <span className="text-lg font-extrabold text-[#007A59] font-heading mt-1 block">
+                    {formatMoney(scholarshipAdjustedTotalINR)}
+                  </span>
+                  <span className="text-[11px] text-[#007A59]">
+                    Est. {selectedFeeProg?.durationYears}-Yr Total (With 30% Tuition Waiver)
+                  </span>
+                </div>
+              </div>
+            </section>
+
+            {/* ────────────────────────────────────────────────────────────────
+                SECTION 7 & 17: SCHOLARSHIPS & INTERACTIVE FEE CALCULATOR (#scholarships)
+               ──────────────────────────────────────────────────────────────── */}
+            <section
+              id="scholarships"
+              className="scroll-mt-32 bg-white rounded-2xl border border-[#E2E8F0] shadow-2xs p-6 sm:p-8 space-y-8"
+            >
+              <div className="border-b border-[#E2E8F0] pb-5">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#007A59] bg-[#ECFDF5] border border-emerald-200 px-3 py-1 rounded-full mb-2">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Scholarships &amp; Financial Aid
+                </span>
+                <h2 className="text-xl sm:text-2xl font-bold text-[#111827] font-heading">
+                  Merit Scholarships &amp; Interactive Fee Calculator
+                </h2>
+                <p className="text-xs sm:text-sm text-[#475569] mt-1">
+                  Explore international merit scholarship slabs, eligibility criteria, renewal rules, and calculate your exact payable fee.
+                </p>
+              </div>
+
+              {/* Scholarship Categories & Slabs Table */}
+              <div className="space-y-4">
+                <h3 className="text-base font-bold text-[#111827] font-heading">
+                  1. International Scholarship Categories &amp; Merit Tiers
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                  {SCHOLARSHIP_CATEGORIES.map((cat) => (
+                    <div
+                      key={cat.id}
+                      className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-4 space-y-1.5"
+                    >
+                      <span className="inline-block px-2.5 py-0.5 rounded-md bg-[#ECFDF5] text-[#007A59] text-xs font-bold">
+                        {cat.maxWaiver}
+                      </span>
+                      <h4 className="text-sm font-bold text-[#111827]">
+                        {cat.name}
+                      </h4>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        {cat.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Merit Slabs Breakdown */}
+                <div className="overflow-x-auto rounded-xl border border-[#E2E8F0]">
+                  <table className="w-full text-left text-xs sm:text-sm">
+                    <thead className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-[#111827] font-bold">
+                      <tr>
+                        <th className="py-3 px-4">Scholarship Tier</th>
+                        <th className="py-3 px-4">Qualifying Marks / GPA</th>
+                        <th className="py-3 px-4">Tuition Waiver</th>
+                        <th className="py-3 px-4">Est. Net Tuition ({calcProgramme?.degree})</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#E2E8F0]">
+                      {SCHOLARSHIP_TIERS.map((tier) => {
+                        const netINR = Math.round(
+                          calcProgramme.annualFeeINR * (1 - tier.discountPercent / 100)
+                        );
+                        return (
+                          <tr key={tier.id} className="hover:bg-[#F8FAFC]">
+                            <td className="py-3 px-4 font-semibold text-[#111827]">
+                              {tier.category}
+                            </td>
+                            <td className="py-3 px-4 text-slate-600">
+                              {tier.academicRequirement}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="px-2.5 py-0.5 rounded-full bg-[#ECFDF5] text-[#007A59] font-bold text-xs">
+                                {tier.discountPercent > 0
+                                  ? `${tier.discountPercent}% Tuition Waiver`
+                                  : "Standard Base Tuition"}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 font-bold text-[#111827]">
+                              {formatMoney(netINR)} / yr
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Required Documents, Application Process & Renewal Conditions */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                  <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1.5">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#111827]">
+                      Required Documents
+                    </h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Official Grade 10 &amp; Grade 12 / High School transcripts (or Bachelor&apos;s marksheets for PG), valid Passport or Citizenship ID, and Equivalence certificate if applicable.
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1.5">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#111827]">
+                      Scholarship Application Process
+                    </h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      No separate scholarship exam is needed. Your transcripts are automatically evaluated during admission review, and the approved waiver is printed on your Offer Letter.
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1.5">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#111827]">
+                      Renewal Conditions (Year 2+)
+                    </h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Continuation into subsequent academic years requires maintaining a minimum 7.5+ CGPA, 75%+ classroom attendance, and zero academic backlogs or disciplinary actions.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* INTERACTIVE FEE & SCHOLARSHIP CALCULATOR (Section 17) */}
+              <div
+                id="fee-calculator"
+                className="pt-6 border-t border-[#E2E8F0] space-y-5"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h3 className="text-lg font-bold text-[#111827] font-heading">
+                      2. Interactive University Fee &amp; Scholarship Calculator
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-600">
+                      Customise your programme, academic score, currency, and hostel preference for an instant breakdown.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                  {/* Calculator Inputs (7 Cols) */}
+                  <div className="lg:col-span-7 space-y-4 bg-[#F8FAFC] p-5 rounded-2xl border border-[#E2E8F0]">
+                    {/* 1. Programme & Specialisation */}
+                    <div className="space-y-1.5">
+                      <label
+                        htmlFor="calc-prog-select"
+                        className="text-xs font-bold text-[#111827] block"
+                      >
+                        1. Select Programme &amp; Specialisation
+                      </label>
+                      <select
+                        id="calc-prog-select"
+                        value={calcProgrammeIdx}
+                        onChange={(e) => setCalcProgrammeIdx(Number(e.target.value))}
+                        className="w-full h-11 px-3.5 rounded-xl bg-white border border-[#E2E8F0] text-[#111827] text-xs sm:text-sm font-semibold focus:outline-none focus:border-[#009B70]"
+                      >
+                        {allProgrammes.map((p, idx) => (
+                          <option key={p.id} value={idx}>
+                            {p.degree} — {p.specialisation} ({formatMoney(p.annualFeeINR)}/yr)
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* 2. Scholarship Category & Currency */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label
+                          htmlFor="calc-cat-select"
+                          className="text-xs font-bold text-[#111827] block"
+                        >
+                          2. Scholarship Category
+                        </label>
+                        <select
+                          id="calc-cat-select"
+                          value={selectedScholarshipCategory}
+                          onChange={(e) => setSelectedScholarshipCategory(e.target.value)}
+                          className="w-full h-10 px-3 rounded-xl bg-white border border-[#E2E8F0] text-[#111827] text-xs font-semibold focus:outline-none focus:border-[#009B70]"
+                        >
+                          {SCHOLARSHIP_CATEGORIES.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.name}
+                            </option>
+                          ))}
+                        </select>
                       </div>
-                      <div className="text-right">
-                        <span className="text-2xl font-bold text-emerald-700 font-heading">
-                          {formatMoney(totalAnnualEstimatedINR)}
+
+                      <div className="space-y-1.5">
+                        <span className="text-xs font-bold text-[#111827] block">
+                          3. Preferred Currency
                         </span>
-                        <span className="text-xs text-slate-500 block">
-                          per year
-                        </span>
+                        <div className="grid grid-cols-3 gap-1.5 bg-white p-1 rounded-xl border border-[#E2E8F0]">
+                          {(["INR", "USD", "NPR"] as CurrencyCode[]).map((code) => (
+                            <button
+                              key={code}
+                              type="button"
+                              onClick={() => setCurrency(code)}
+                              className={`h-8 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                                currency === code
+                                  ? "bg-[#009B70] text-white"
+                                  : "text-slate-600 hover:text-[#111827]"
+                              }`}
+                            >
+                              {code}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 4. Qualifying Marks / Academic Performance */}
+                    <div className="space-y-1.5">
+                      <span className="text-xs font-bold text-[#111827] block">
+                        4. Your Qualifying Academic Marks / GPA
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {SCHOLARSHIP_TIERS.map((tier) => {
+                          const active = selectedScholarshipId === tier.id;
+                          return (
+                            <button
+                              key={tier.id}
+                              type="button"
+                              onClick={() => setSelectedScholarshipId(tier.id)}
+                              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                                active
+                                  ? "bg-[#ECFDF5] border-[#009B70] text-[#111827]"
+                                  : "bg-white border-[#E2E8F0] text-slate-700 hover:border-[#009B70]/50"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-xs font-bold text-[#111827]">
+                                  {tier.label}
+                                </span>
+                                <span
+                                  className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                                    tier.discountPercent > 0
+                                      ? "bg-[#009B70] text-white"
+                                      : "bg-slate-100 text-slate-600"
+                                  }`}
+                                >
+                                  {tier.discountPercent > 0
+                                    ? `${tier.discountPercent}% Waiver`
+                                    : "Base Fee"}
+                                </span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* 5. Hostel Preference */}
+                    <div className="space-y-1.5">
+                      <span className="text-xs font-bold text-[#111827] block">
+                        5. Hostel &amp; Accommodation Preference
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        {[
+                          {
+                            id: "ac" as const,
+                            label: "AC Hostel + Mess",
+                            sub: formatMoney(university.hostelFeePerYearINR) + "/yr",
+                          },
+                          {
+                            id: "non-ac" as const,
+                            label: "Non-AC Hostel + Mess",
+                            sub:
+                              formatMoney(
+                                Math.round(university.hostelFeePerYearINR * 0.78)
+                              ) + "/yr",
+                          },
+                          {
+                            id: "none" as const,
+                            label: "Off-Campus / None",
+                            sub: "Tuition Only",
+                          },
+                        ].map((opt) => {
+                          const active = hostelPreference === opt.id;
+                          return (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              onClick={() => setHostelPreference(opt.id)}
+                              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                                active
+                                  ? "bg-[#ECFDF5] border-[#009B70] text-[#111827]"
+                                  : "bg-white border-[#E2E8F0] text-slate-700 hover:border-[#009B70]/50"
+                              }`}
+                            >
+                              <span className="text-xs font-bold text-[#111827] block">
+                                {opt.label}
+                              </span>
+                              <span className="text-[11px] text-[#007A59] font-semibold">
+                                {opt.sub}
+                              </span>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
 
+                  {/* Calculator Output Breakdown Card (5 Cols) */}
+                  <div className="lg:col-span-5 rounded-2xl bg-white border-2 border-[#009B70]/30 p-5 sm:p-6 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+                      <div>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#007A59] block">
+                          Estimated Cost Summary
+                        </span>
+                        <h4 className="text-base font-bold text-[#111827] font-heading">
+                          {calcProgramme.degree} ({calcProgramme.durationYears} Years)
+                        </h4>
+                      </div>
+                      <span className="px-2.5 py-1 rounded-full bg-[#ECFDF5] border border-emerald-200 text-[#007A59] font-bold text-xs">
+                        {effectiveDiscountPercent}% Waiver
+                      </span>
+                    </div>
+
+                    <div className="space-y-2.5 text-xs sm:text-sm">
+                      <div className="flex items-center justify-between text-slate-600">
+                        <span>Annual Tuition Fee:</span>
+                        <span className="font-semibold text-[#111827]">
+                          {formatMoney(grossTuitionINR)}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[#007A59] font-semibold bg-[#ECFDF5] px-3 py-2 rounded-xl border border-emerald-200">
+                        <span>Scholarship Deduction ({effectiveDiscountPercent}%):</span>
+                        <span>- {formatMoney(scholarshipDeductionINR)}</span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[#111827] font-bold pt-1">
+                        <span>Net Payable Tuition:</span>
+                        <span>{formatMoney(netTuitionINR)}</span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-slate-600">
+                        <span>Hostel &amp; Mess Fee:</span>
+                        <span className="font-semibold text-[#111827]">
+                          {formatMoney(selectedHostelINR)}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-slate-600 border-b border-[#E2E8F0] pb-3">
+                        <span>Exam, Lab &amp; Library Charges:</span>
+                        <span className="font-semibold text-[#111827]">
+                          {formatMoney(mandatoryAnnualAcademicINR)}
+                        </span>
+                      </div>
+
+                      <div className="pt-1 flex items-baseline justify-between">
+                        <div>
+                          <span className="text-sm font-bold text-[#111827] block">
+                            Estimated Annual Payable
+                          </span>
+                          <span className="text-[11px] text-slate-500">
+                            Full {calcProgramme.durationYears}-Yr Est:{" "}
+                            <strong>{formatMoney(totalPayableDegreeINR)}</strong>
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-2xl font-extrabold text-[#009B70] font-heading">
+                            {formatMoney(totalPayableAnnualINR)}
+                          </span>
+                          <span className="text-[11px] text-slate-500 block">
+                            per year ({currency})
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="text-[11px] text-slate-500 leading-relaxed bg-[#F8FAFC] p-2.5 rounded-lg border border-[#E2E8F0]">
+                      * Scholarships are subject to official university verification of final transcripts and seat availability at the time of admission.
+                    </p>
+
+                    <Link
+                      href={`/register?universityId=${university.id}&courseId=${calcProgramme.id}`}
+                      className="block"
+                    >
+                      <Button className="w-full h-11 rounded-xl bg-[#009B70] hover:bg-[#007A59] text-white font-semibold text-xs sm:text-sm gap-2 cursor-pointer">
+                        <span>Apply with This Estimate</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* ────────────────────────────────────────────────────────────────
+                SECTION 8: CAMPUS & FACILITIES (#campus-facilities)
+               ──────────────────────────────────────────────────────────────── */}
+            <section
+              id="campus-facilities"
+              className="scroll-mt-32 bg-white rounded-2xl border border-[#E2E8F0] shadow-2xs p-6 sm:p-8 space-y-6"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#E2E8F0] pb-5">
+                <div>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#007A59] bg-[#ECFDF5] border border-emerald-200 px-3 py-1 rounded-full mb-2">
+                    <Layers className="w-3.5 h-3.5" />
+                    Campus &amp; Infrastructure
+                  </span>
+                  <h2 className="text-xl sm:text-2xl font-bold text-[#111827] font-heading">
+                    Visual Campus Experience &amp; Verified Facilities
+                  </h2>
+                  <p className="text-xs sm:text-sm text-[#475569] mt-1">
+                    Explore academic buildings, laboratories, libraries, hostels, dining, sports, and medical infrastructure at {university.name}.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5">
+                  {["All", "Academic", "Laboratories", "Library", "Hostel & Dining", "Sports & Medical"].map(
+                    (cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => setSelectedGalleryFilter(cat)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer border ${
+                          selectedGalleryFilter === cat
+                            ? "bg-[#009B70] text-white border-[#009B70]"
+                            : "bg-[#F8FAFC] text-slate-600 border-[#E2E8F0] hover:text-[#111827]"
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    )
+                  )}
+                </div>
+              </div>
+
+              {/* Image Gallery Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                {filteredGallery.map((item, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setLightboxItem(item)}
+                    className="group text-left rounded-xl border border-[#E2E8F0] overflow-hidden bg-[#F8FAFC] hover:border-[#009B70] transition-all flex flex-col cursor-pointer"
+                  >
+                    <div className="relative h-36 w-full overflow-hidden bg-slate-100">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-slate-900/75 text-white text-[10px] font-semibold">
+                        {item.category}
+                      </span>
+                    </div>
+                    <div className="p-3 space-y-1 flex-1">
+                      <h3 className="text-xs font-bold text-[#111827] group-hover:text-[#009B70] transition-colors line-clamp-1">
+                        {item.title}
+                      </h3>
+                      <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
+                        {item.description}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Verified University Facilities List */}
+              <div className="pt-4 border-t border-[#E2E8F0] space-y-3">
+                <h3 className="text-sm font-bold text-[#111827]">
+                  Verified On-Campus Facilities at {university.name}
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {university.facilities.map((facility, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-[#ECFDF5] border border-emerald-200 text-[#009B70] flex items-center justify-center shrink-0">
+                        <CheckCircle2 className="w-4 h-4" />
+                      </div>
+                      <span className="text-xs sm:text-sm font-semibold text-[#111827]">
+                        {facility}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* ────────────────────────────────────────────────────────────────
+                SECTION 9: HOSTEL & ACCOMMODATION (#accommodation)
+               ──────────────────────────────────────────────────────────────── */}
+            <section
+              id="accommodation"
+              className="scroll-mt-32 bg-white rounded-2xl border border-[#E2E8F0] shadow-2xs p-6 sm:p-8 space-y-6"
+            >
+              <div className="border-b border-[#E2E8F0] pb-5">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#007A59] bg-[#ECFDF5] border border-emerald-200 px-3 py-1 rounded-full mb-2">
+                  <BedDouble className="w-3.5 h-3.5" />
+                  Hostel &amp; Student Accommodation
+                </span>
+                <h2 className="text-xl sm:text-2xl font-bold text-[#111827] font-heading">
+                  On-Campus Residential Hostels &amp; Dining
+                </h2>
+                <p className="text-xs sm:text-sm text-[#475569] mt-1">
+                  Safe, comfortable, and fully supervised hostel residences for international and regional students.
+                </p>
+              </div>
+
+              {/* Room Types & Annual Charges */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="rounded-xl border border-emerald-200 bg-[#ECFDF5]/40 p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="px-2.5 py-0.5 rounded-md bg-[#009B70] text-white text-xs font-bold">
+                      Most Popular for International Students
+                    </span>
+                    <span className="text-xs font-semibold text-[#007A59]">
+                      AC Residence
+                    </span>
+                  </div>
+                  <h3 className="text-base font-bold text-[#111827] font-heading">
+                    Air-Conditioned (AC) Hostel Room + Mess
+                  </h3>
+                  <div className="text-2xl font-extrabold text-[#111827] font-heading">
+                    {formatMoney(university.hostelFeePerYearINR)}
+                    <span className="text-xs font-normal text-slate-500"> / year (Incl. Meals)</span>
+                  </div>
+                  <ul className="space-y-1.5 text-xs text-slate-600 pt-1">
+                    <li className="flex items-center gap-2">
+                      <Check className="w-3.5 h-3.5 text-[#009B70]" />
+                      <span>Double / Triple sharing configurations (Single subject to availability)</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-3.5 h-3.5 text-[#009B70]" />
+                      <span>Individual bed, study desk, chair, wardrobe &amp; high-speed Wi-Fi</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-3.5 h-3.5 text-[#009B70]" />
+                      <span>Includes 4 daily meals at the international/campus dining hall</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="px-2.5 py-0.5 rounded-md bg-white border border-[#E2E8F0] text-slate-700 text-xs font-bold">
+                      Economical Residential Plan
+                    </span>
+                    <span className="text-xs font-semibold text-slate-600">
+                      Non-AC Residence
+                    </span>
+                  </div>
+                  <h3 className="text-base font-bold text-[#111827] font-heading">
+                    Standard Non-AC Hostel Room + Mess
+                  </h3>
+                  <div className="text-2xl font-extrabold text-[#111827] font-heading">
+                    {formatMoney(Math.round(university.hostelFeePerYearINR * 0.78))}
+                    <span className="text-xs font-normal text-slate-500"> / year (Incl. Meals)</span>
+                  </div>
+                  <ul className="space-y-1.5 text-xs text-slate-600 pt-1">
+                    <li className="flex items-center gap-2">
+                      <Check className="w-3.5 h-3.5 text-[#009B70]" />
+                      <span>Well-ventilated double / triple sharing rooms with ceiling fans</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-3.5 h-3.5 text-[#009B70]" />
+                      <span>Full study furniture, RO drinking water, hot water &amp; Wi-Fi</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-3.5 h-3.5 text-[#009B70]" />
+                      <span>Includes complete daily mess meals, laundry access &amp; security</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Hostel Amenities Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  {
+                    icon: Utensils,
+                    title: "Multi-Cuisine Mess",
+                    desc: "Veg, Non-Veg & Nepali/SAARC friendly meals",
+                  },
+                  {
+                    icon: Lock,
+                    title: "24×7 Security",
+                    desc: "Biometric entry, CCTV & dedicated wardens",
+                  },
+                  {
+                    icon: Wifi,
+                    title: "Campus Wi-Fi & Study",
+                    desc: "High-speed internet & common reading rooms",
+                  },
+                  {
+                    icon: HeartPulse,
+                    title: "Laundry & Medical",
+                    desc: "Laundry service & 24×7 medical support",
+                  },
+                ].map((item, idx) => {
+                  const Icon = item.icon;
+                  return (
+                    <div
+                      key={idx}
+                      className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1"
+                    >
+                      <Icon className="w-4 h-4 text-[#009B70]" />
+                      <h4 className="text-xs font-bold text-[#111827]">
+                        {item.title}
+                      </h4>
+                      <p className="text-[11px] text-slate-500 leading-snug">
+                        {item.desc}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* ────────────────────────────────────────────────────────────────
+                SECTION 10: PLACEMENTS & CAREER OPPORTUNITIES (#placements)
+               ──────────────────────────────────────────────────────────────── */}
+            <section
+              id="placements"
+              className="scroll-mt-32 bg-white rounded-2xl border border-[#E2E8F0] shadow-2xs p-6 sm:p-8 space-y-6"
+            >
+              <div className="border-b border-[#E2E8F0] pb-5">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#007A59] bg-[#ECFDF5] border border-emerald-200 px-3 py-1 rounded-full mb-2">
+                  <Briefcase className="w-3.5 h-3.5" />
+                  Placements &amp; Career Outcomes
+                </span>
+                <h2 className="text-xl sm:text-2xl font-bold text-[#111827] font-heading">
+                  Career Development, Internships &amp; Placement Support
+                </h2>
+                <p className="text-xs sm:text-sm text-[#475569] mt-1">
+                  Verified career preparation, clinical/industry training, and placement cell services at {university.name}.
+                </p>
+              </div>
+
+              {/* Honest, Verified Placement Metrics Bar (Strict Data Integrity) */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-4">
+                  <span className="text-xs font-medium text-slate-500 block">
+                    Placement Cell Status
+                  </span>
+                  <span className="text-base font-bold text-[#111827] font-heading mt-1 block">
+                    {university.placementRate || "Dedicated T&P Cell"}
+                  </span>
+                  <span className="text-[11px] text-[#007A59] font-medium">
+                    Active On-Campus Recruitment Drives
+                  </span>
+                </div>
+
+                <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-4">
+                  <span className="text-xs font-medium text-slate-500 block">
+                    Salary Package Statistics
+                  </span>
+                  <span className="text-base font-bold text-[#111827] font-heading mt-1 block">
+                    {university.highestPackage ||
+                      university.averagePackage ||
+                      "Department-Specific"}
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    {university.highestPackage
+                      ? "Verified Institutional Record"
+                      : "Official branch-wise report shared on request"}
+                  </span>
+                </div>
+
+                <div className="rounded-xl bg-[#ECFDF5]/60 border border-emerald-200 p-4">
+                  <span className="text-xs font-medium text-[#007A59] block">
+                    Mandatory Internships
+                  </span>
+                  <span className="text-base font-bold text-[#007A59] font-heading mt-1 block">
+                    Included in Curriculum
+                  </span>
+                  <span className="text-[11px] text-[#007A59]">
+                    Final-Semester Industry / Clinical Training
+                  </span>
+                </div>
+              </div>
+
+              {/* Career Development & Placement Highlights */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-5 space-y-3">
+                  <h3 className="text-sm font-bold text-[#111827]">
+                    Career &amp; Training Support Services
+                  </h3>
+                  <ul className="space-y-2 text-xs sm:text-[13px] text-slate-600">
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-[#009B70] shrink-0 mt-0.5" />
+                      <span>
+                        <strong>Industry Internship Integration:</strong> Structured summer and final-semester internships across IT, engineering, corporate, and healthcare sectors.
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-[#009B70] shrink-0 mt-0.5" />
+                      <span>
+                        <strong>Technical &amp; Coding Bootcamps:</strong> Aptitude preparation, mock interviews, and technical certification training from Semester 5 onwards.
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-[#009B70] shrink-0 mt-0.5" />
+                      <span>
+                        <strong>Global Licensure Preparation:</strong> Academic alignment for NEC (Nepal Engineering Council), NMC, PCI, INC, and international postgraduate pathways.
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-5 space-y-3">
+                  <h3 className="text-sm font-bold text-[#111827]">
+                    Top Graduate Career Tracks from {university.name}
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.from(
+                      new Set(allProgrammes.flatMap((p) => p.careers))
+                    )
+                      .slice(0, 12)
+                      .map((role, idx) => (
+                        <span
+                          key={idx}
+                          className="px-3 py-1.5 rounded-lg bg-white border border-[#E2E8F0] text-xs font-semibold text-[#111827]"
+                        >
+                          {role}
+                        </span>
+                      ))}
+                  </div>
+                  <p className="text-[11px] text-slate-500 pt-1">
+                    Note: StudyIndia strictly publishes verified institutional data. For branch-specific placement statistics of the most recent graduating batch, request the official university placement brochure from our counseling desk.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* ────────────────────────────────────────────────────────────────
+                SECTION 11: INTERNATIONAL STUDENT EXPERIENCE (#international-students)
+               ──────────────────────────────────────────────────────────────── */}
+            <section
+              id="international-students"
+              className="scroll-mt-32 bg-white rounded-2xl border border-[#E2E8F0] shadow-2xs p-6 sm:p-8 space-y-6"
+            >
+              <div className="border-b border-[#E2E8F0] pb-5">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#007A59] bg-[#ECFDF5] border border-emerald-200 px-3 py-1 rounded-full mb-2">
+                  <Globe className="w-3.5 h-3.5" />
+                  International Student Experience
+                </span>
+                <h2 className="text-xl sm:text-2xl font-bold text-[#111827] font-heading">
+                  Dedicated Support for Students from Nepal &amp; 50+ Countries
+                </h2>
+                <p className="text-xs sm:text-sm text-[#475569] mt-1">
+                  With {university.nepaliStudentCount.toLocaleString()}+ international and regional students, {university.name} provides end-to-end onboarding from application to graduation.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  {
+                    title: "Bilateral Treaty Benefits (Nepal & Bhutan)",
+                    desc: "Nepalese and Bhutanese nationals enjoy visa-free entry into India using a valid Passport or National Citizenship ID, alongside dedicated SAARC merit scholarship slabs.",
+                  },
+                  {
+                    title: "Document Equivalence & MoEST NOC Support",
+                    desc: "Rapid issuance of official University Bonafide & Provisional Admission Letters required for Ministry of Education (MoEST, Nepal) No Objection Certificate (NOC) and bank education loans.",
+                  },
+                  {
+                    title: "Student e-Visa & FRRO Registration",
+                    desc: "For students from Africa, the Middle East, Central Asia, and ASEAN, the International Office issues official Visa Invitation Letters and assists with mandatory FRRO registration within 14 days of arrival.",
+                  },
+                  {
+                    title: "Pre-Arrival Briefing & Airport Reception",
+                    desc: "Coordinated arrival guidance from the nearest international airport/railway hub, temporary parent guest-house booking assistance, SIM card setup, and campus orientation.",
+                  },
+                ].map((card, idx) => (
+                  <div
+                    key={idx}
+                    className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-5 space-y-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-[#ECFDF5] border border-emerald-200 text-[#009B70] flex items-center justify-center text-xs font-bold">
+                        0{idx + 1}
+                      </div>
+                      <h3 className="text-sm font-bold text-[#111827]">
+                        {card.title}
+                      </h3>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      {card.desc}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* International Student Support CTA Banner */}
+              <div className="rounded-xl bg-[#ECFDF5] border border-emerald-200 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#007A59] block">
+                    International Admissions Desk
+                  </span>
+                  <h3 className="text-base font-bold text-[#111827] font-heading">
+                    Need help with Equivalence, MoEST NOC, or Student Visa?
+                  </h3>
+                  <p className="text-xs text-slate-600">
+                    Connect with our dedicated international admissions counselors for free document pre-screening.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setCallbackModalOpen(true)}
+                    className="h-10 px-4 rounded-xl bg-[#009B70] hover:bg-[#007A59] text-white font-semibold text-xs transition-colors cursor-pointer"
+                  >
+                    Contact International Support
+                  </button>
                   <Link
                     href={`/register?universityId=${university.id}`}
-                    className="block pt-2"
+                    className="h-10 px-4 rounded-xl bg-white hover:bg-slate-50 border border-emerald-300 text-[#007A59] font-semibold text-xs inline-flex items-center gap-1.5 transition-colors"
                   >
-                    <Button className="w-full h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm gap-1.5 shadow-xs cursor-pointer">
-                      <span>Apply with This Scholarship</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </Button>
+                    <span>Start Application</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
               </div>
             </section>
 
-            {/* ── SECTION C: WHY GLOBAL STUDENTS CHOOSE THIS CAMPUS ── */}
+            {/* ────────────────────────────────────────────────────────────────
+                SECTION 12: UNIVERSITY LOCATION & CONNECTIVITY (#location)
+               ──────────────────────────────────────────────────────────────── */}
             <section
-              id="why-choose"
-              className="scroll-mt-24 bg-white rounded-2xl border border-slate-200/90 shadow-xs p-6 sm:p-8 space-y-6"
+              id="location"
+              className="scroll-mt-32 bg-white rounded-2xl border border-[#E2E8F0] shadow-2xs p-6 sm:p-8 space-y-6"
             >
-              <div>
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-3 py-1 rounded-full mb-2">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Key Highlights
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#E2E8F0] pb-5">
+                <div>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#007A59] bg-[#ECFDF5] border border-emerald-200 px-3 py-1 rounded-full mb-2">
+                    <Navigation className="w-3.5 h-3.5" />
+                    Location &amp; Connectivity
+                  </span>
+                  <h2 className="text-xl sm:text-2xl font-bold text-[#111827] font-heading">
+                    Campus Address &amp; Regional Transit Access
+                  </h2>
+                  <p className="text-xs sm:text-sm text-[#475569] mt-1">
+                    {university.campusAddress || `${university.name}, ${university.city}, ${university.state}, India`}
+                  </p>
+                </div>
+
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                    `${university.name} ${university.city} ${university.state} India`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-[#F8FAFC] hover:bg-[#ECFDF5] border border-[#E2E8F0] text-xs font-semibold text-[#111827] hover:text-[#007A59] transition-colors shrink-0 self-start sm:self-auto"
+                >
+                  <span>Open in Google Maps</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                {/* Interactive Google Maps Embed (7 Cols) */}
+                <div className="md:col-span-7 rounded-xl overflow-hidden border border-[#E2E8F0] bg-slate-100 h-64 sm:h-72">
+                  <iframe
+                    title={`${university.name} Campus Location Map`}
+                    src={`https://www.google.com/maps?q=${encodeURIComponent(
+                      `${university.name} ${university.city} ${university.state} India`
+                    )}&output=embed`}
+                    className="w-full h-full border-0"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                </div>
+
+                {/* Connectivity & Essential Services (5 Cols) */}
+                <div className="md:col-span-5 space-y-3">
+                  <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#111827]">
+                      <MapPin className="w-4 h-4 text-[#009B70]" />
+                      <span>Official Campus Location</span>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      {university.name}, {university.city}, {university.state}, India
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#111827]">
+                      <Plane className="w-4 h-4 text-[#009B70]" />
+                      <span>Air Connectivity</span>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      {university.nearestAirport ||
+                        `Accessible via the nearest regional/international airport serving ${university.city} (${university.state}). Direct flight connections from Kathmandu via New Delhi / major Indian hubs.`}
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#111827]">
+                      <Train className="w-4 h-4 text-[#009B70]" />
+                      <span>Railway &amp; Highway Transit</span>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      {university.nearestRailway ||
+                        `Connected to ${university.city} Junction / main railway terminus with regular cab, bus, and inter-state transit services to campus.`}
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#111827]">
+                      <Building2 className="w-4 h-4 text-[#009B70]" />
+                      <span>Essential Services Around Campus</span>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      ATMs, nationalized banks, pharmacies, student stationery stores, hospitals, and parent guest accommodations are located within the campus periphery.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* ────────────────────────────────────────────────────────────────
+                SECTION 13 & 14: ADMISSION PROCESS & DOCUMENT CHECKLIST (#admission-process)
+               ──────────────────────────────────────────────────────────────── */}
+            <section
+              id="admission-process"
+              className="scroll-mt-32 bg-white rounded-2xl border border-[#E2E8F0] shadow-2xs p-6 sm:p-8 space-y-8"
+            >
+              <div className="border-b border-[#E2E8F0] pb-5">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#007A59] bg-[#ECFDF5] border border-emerald-200 px-3 py-1 rounded-full mb-2">
+                  <FileCheck2 className="w-3.5 h-3.5" />
+                  Step-by-Step Admission Guide
                 </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 font-heading">
-                  Why International Students Choose {university.name}
+                <h2 className="text-xl sm:text-2xl font-bold text-[#111827] font-heading">
+                  7-Step International Admission Process &amp; Document Checklist
                 </h2>
-                <p className="text-sm text-slate-600 mt-1 leading-relaxed">
-                  {university.description}
+                <p className="text-xs sm:text-sm text-[#475569] mt-1">
+                  Transparent admission workflow from online form submission to campus arrival at {university.name}.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {university.highlights.map((highlight, idx) => (
+              {/* 7-Step Timeline */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
+                {[
+                  {
+                    step: "01",
+                    title: "Submit Online Application",
+                    desc: "Complete your StudyIndia application form with preferred course.",
+                  },
+                  {
+                    step: "02",
+                    title: "Upload Documents",
+                    desc: "Upload Grade 10, Grade 12 / UG marksheets & Passport/ID scan.",
+                  },
+                  {
+                    step: "03",
+                    title: "Eligibility Verification",
+                    desc: "Admissions team verifies board equivalence & merit scholarship.",
+                  },
+                  {
+                    step: "04",
+                    title: "Provisional Offer Letter",
+                    desc: "Receive official University Offer Letter with scholarship breakdown.",
+                  },
+                  {
+                    step: "05",
+                    title: "Admission Formalities",
+                    desc: "Confirm seat registration directly via official university portal.",
+                  },
+                  {
+                    step: "06",
+                    title: "Visa / NOC Support",
+                    desc: "Obtain MoEST NOC (Nepal) or Student e-Visa with official letters.",
+                  },
+                  {
+                    step: "07",
+                    title: "Campus Onboarding",
+                    desc: "Arrive on campus, complete document verification & join classes.",
+                  },
+                ].map((item) => (
                   <div
-                    key={idx}
-                    className="flex items-start gap-3.5 p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 hover:border-emerald-300 transition-all"
+                    key={item.step}
+                    className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3.5 flex flex-col justify-between space-y-2"
                   >
-                    <div className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
-                      {idx + 1}
-                    </div>
+                    <span className="w-7 h-7 rounded-lg bg-[#009B70] text-white font-bold text-xs flex items-center justify-center">
+                      {item.step}
+                    </span>
                     <div className="space-y-1">
-                      <p className="text-sm font-medium text-slate-800 leading-relaxed">
-                        {highlight}
+                      <h3 className="text-xs font-bold text-[#111827] leading-snug">
+                        {item.title}
+                      </h3>
+                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                        {item.desc}
                       </p>
                     </div>
                   </div>
                 ))}
               </div>
+
+              {/* SECTION 14: INTERACTIVE DOCUMENT CHECKLIST */}
+              <div
+                id="document-checklist"
+                className="pt-6 border-t border-[#E2E8F0] space-y-4"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-base sm:text-lg font-bold text-[#111827] font-heading">
+                      Interactive Student Document Readiness Checklist
+                    </h3>
+                    <p className="text-xs text-slate-600">
+                      Check off the documents you currently have ready. (Self-assessment tool — official uploads happen in the application portal.)
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs font-semibold text-slate-600">
+                      Readiness:
+                    </span>
+                    <span className="px-3 py-1 rounded-full bg-[#ECFDF5] border border-emerald-200 text-[#007A59] font-bold text-xs">
+                      {docProgress}% Complete ({checkedDocs.length}/{DOCUMENT_CHECKLIST.length})
+                    </span>
+                  </div>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="w-full h-2.5 rounded-full bg-slate-100 overflow-hidden">
+                  <div
+                    className="h-full bg-[#009B70] transition-all duration-300"
+                    style={{ width: `${docProgress}%` }}
+                  />
+                </div>
+
+                {/* Checklist Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {DOCUMENT_CHECKLIST.map((doc) => {
+                    const checked = checkedDocs.includes(doc.id);
+                    return (
+                      <button
+                        key={doc.id}
+                        type="button"
+                        onClick={() => toggleDoc(doc.id)}
+                        className={`text-left p-3.5 rounded-xl border transition-all flex items-start gap-3 cursor-pointer ${
+                          checked
+                            ? "bg-[#ECFDF5]/60 border-[#009B70] text-[#111827]"
+                            : "bg-[#F8FAFC] border-[#E2E8F0] text-slate-600 hover:border-slate-300"
+                        }`}
+                      >
+                        {checked ? (
+                          <CheckSquare className="w-4 h-4 text-[#009B70] shrink-0 mt-0.5" />
+                        ) : (
+                          <Square className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                        )}
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs sm:text-sm font-bold text-[#111827]">
+                              {doc.title}
+                            </span>
+                            {!doc.mandatory && (
+                              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-200/70 text-slate-600">
+                                If Applicable
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-xs text-slate-500 block">
+                            {doc.subtitle}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="pt-2 flex flex-wrap items-center justify-between gap-3">
+                  <span className="text-xs text-slate-500">
+                    Note: Pending Grade 12 results or Migration Certificates can be submitted after provisional offer issuance.
+                  </span>
+                  <Link href={`/register?universityId=${university.id}`}>
+                    <Button className="h-10 px-5 rounded-xl bg-[#009B70] hover:bg-[#007A59] text-white font-semibold text-xs gap-1.5 cursor-pointer">
+                      <span>Proceed to Online Application</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
             </section>
 
-            {/* ── SECTION D: CAMPUS INFRASTRUCTURE & STUDENT SUPPORT ── */}
+            {/* ────────────────────────────────────────────────────────────────
+                SECTION 15: FAQ SECTION (#faqs)
+               ──────────────────────────────────────────────────────────────── */}
             <section
-              id="infrastructure"
-              className="scroll-mt-24 bg-white rounded-2xl border border-slate-200/90 shadow-xs p-6 sm:p-8 space-y-6"
+              id="faqs"
+              className="scroll-mt-32 bg-white rounded-2xl border border-[#E2E8F0] shadow-2xs p-6 sm:p-8 space-y-6"
             >
-              <div>
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-3 py-1 rounded-full mb-2">
-                  <Building2 className="w-3.5 h-3.5" />
-                  Campus Facilities
+              <div className="border-b border-[#E2E8F0] pb-5">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#007A59] bg-[#ECFDF5] border border-emerald-200 px-3 py-1 rounded-full mb-2">
+                  <HelpCircle className="w-3.5 h-3.5" />
+                  Frequently Asked Questions
                 </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 font-heading">
-                  Campus Infrastructure &amp; Student Life
+                <h2 className="text-xl sm:text-2xl font-bold text-[#111827] font-heading">
+                  Verified Answers About {university.name}
                 </h2>
-                <p className="text-sm text-slate-600 mt-0.5">
-                  Modern academic laboratories, comfortable on-campus hostels, and dedicated support for international students.
+                <p className="text-xs sm:text-sm text-[#475569] mt-1">
+                  Everything international students and parents ask about recognition, fees, scholarships, hostels, visas, and placements.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                {university.facilities.map((facility, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 hover:border-emerald-300 transition-all"
-                  >
-                    <div className="w-9 h-9 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
-                      {i % 4 === 0 ? (
-                        <Wifi className="w-4 h-4" />
-                      ) : i % 4 === 1 ? (
-                        <Layers className="w-4 h-4" />
-                      ) : i % 4 === 2 ? (
-                        <HeartPulse className="w-4 h-4" />
-                      ) : (
-                        <Building2 className="w-4 h-4" />
+              <div className="divide-y divide-[#E2E8F0] border border-[#E2E8F0] rounded-xl overflow-hidden">
+                {universityFaqs.map((faq, idx) => {
+                  const isOpen = openFaqIdx === idx;
+                  return (
+                    <div key={idx} className="bg-white">
+                      <button
+                        type="button"
+                        aria-expanded={isOpen}
+                        onClick={() =>
+                          setOpenFaqIdx(isOpen ? null : idx)
+                        }
+                        className="w-full text-left px-5 py-4 flex items-center justify-between gap-4 hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+                      >
+                        <div className="space-y-0.5">
+                          <span className="text-[11px] font-semibold text-[#007A59] block">
+                            {faq.category}
+                          </span>
+                          <span className="text-sm font-bold text-[#111827] block">
+                            {faq.question}
+                          </span>
+                        </div>
+                        <ChevronDown
+                          className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${
+                            isOpen ? "rotate-180 text-[#009B70]" : ""
+                          }`}
+                        />
+                      </button>
+                      {isOpen && (
+                        <div className="px-5 pb-4 pt-1 text-xs sm:text-sm text-[#475569] leading-relaxed bg-[#F8FAFC]/60 border-t border-slate-100">
+                          {faq.answer}
+                        </div>
                       )}
                     </div>
-                    <div>
-                      <span className="text-sm font-semibold text-slate-800 block">
-                        {facility}
-                      </span>
-                      <span className="text-xs text-slate-500">
-                        On-Campus Facility
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* International Student Support Strip */}
-              <div className="rounded-xl bg-emerald-50/60 border border-emerald-200/80 p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="flex items-start gap-3">
-                  <Globe className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                  <div className="text-xs sm:text-sm">
-                    <span className="font-semibold text-slate-900 block">
-                      International Student Desk
-                    </span>
-                    <span className="text-xs text-slate-600 leading-relaxed">
-                      Dedicated FRRO registration, visa assistance, and student welfare support.
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Plane className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                  <div className="text-xs sm:text-sm">
-                    <span className="font-semibold text-slate-900 block">
-                      Airport Pickup Support
-                    </span>
-                    <span className="text-xs text-slate-600 leading-relaxed">
-                      Coordinated arrival assistance from the nearest international airport.
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                  <div className="text-xs sm:text-sm">
-                    <span className="font-semibold text-slate-900 block">
-                      24×7 Campus Security
-                    </span>
-                    <span className="text-xs text-slate-600 leading-relaxed">
-                      Secure residential hostels, CCTV coverage, and on-campus medical care.
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* ── SECTION E: OFFICIAL RECOGNITION & ACCREDITATION ── */}
-            <section
-              id="recognition"
-              className="scroll-mt-24 bg-white rounded-2xl border border-slate-200/90 shadow-xs p-6 sm:p-8 space-y-6"
-            >
-              <div>
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-3 py-1 rounded-full mb-2">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  Official Recognition &amp; Accreditation
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 font-heading">
-                  Recognised &amp; Quality-Assessed Institution
-                </h2>
-                <p className="text-sm text-slate-600 mt-0.5">
-                  University Recognition, Institutional Accreditation &amp; Regulatory Approvals as Applicable.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-5 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-2.5">
-                  <div className="w-9 h-9 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center">
-                    <ShieldCheck className="w-5 h-5" />
-                  </div>
-                  <h3 className="text-sm font-bold text-slate-900">
-                    UGC Recognised University
-                  </h3>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    Degrees awarded by {university.name} are recognised by the University Grants Commission (UGC), as applicable under the UGC Act, 1956.
-                  </p>
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 pt-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    International Academic Recognition
-                  </span>
-                </div>
-
-                <div className="p-5 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-2.5">
-                  <div className="w-9 h-9 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center">
-                    <FileCheck2 className="w-5 h-5" />
-                  </div>
-                  <h3 className="text-sm font-bold text-slate-900">
-                    AICTE Approved Programmes
-                  </h3>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    Applicable Technical &amp; Professional Programmes follow All India Council for Technical Education (AICTE) approval norms.
-                  </p>
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 pt-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    Industry-Relevant Curriculum
-                  </span>
-                </div>
-
-                <div className="p-5 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-2.5">
-                  <div className="w-9 h-9 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center">
-                    <Award className="w-5 h-5" />
-                  </div>
-                  <h3 className="text-sm font-bold text-slate-900">
-                    {university.naacGrade.includes("UGC")
-                      ? "Quality-Assessed Campus"
-                      : `NAAC ${university.naacGrade} Accredited`}
-                  </h3>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    Assessed under national accreditation frameworks recognising institutional quality and academic excellence.
-                  </p>
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 pt-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    Quality Academic Environment
-                  </span>
-                </div>
+                  );
+                })}
               </div>
             </section>
           </div>
 
-          {/* RIGHT 4 COLUMNS: CLEAN, LIGHT STICKY ADMISSIONS SIDEBAR */}
-          <div className="lg:col-span-4 lg:sticky lg:top-24 space-y-6">
-            {/* Card 1: International Admissions Desk */}
-            <div className="rounded-2xl border border-slate-200/90 bg-white shadow-xs overflow-hidden">
-              <div className="bg-emerald-50/70 border-b border-emerald-100 p-6 space-y-2">
+          {/* ══════════════════════════════════════════════════════════════════
+              SECTION 16: DESKTOP STICKY ENQUIRY & ADMISSIONS SIDEBAR (4 Cols)
+             ══════════════════════════════════════════════════════════════════ */}
+          <div className="lg:col-span-4 lg:sticky lg:top-28 space-y-6">
+            {/* Compact Sticky Enquiry Card */}
+            <div className="rounded-2xl border border-[#E2E8F0] bg-white shadow-sm overflow-hidden">
+              <div className="bg-[#ECFDF5] border-b border-emerald-200/80 p-5 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-white border border-emerald-200/80 px-2.5 py-1 rounded-full">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-                    Official Admissions Desk
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#007A59] bg-white border border-emerald-200 px-2.5 py-1 rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#009B70]" />
+                    Official Admissions Support
                   </span>
-                  <span className="text-xs font-medium text-slate-500">
+                  <span className="text-xs font-semibold text-[#007A59]">
                     2027–28 Intake
                   </span>
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 font-heading pt-1">
-                  International Admissions Support
+                <h3 className="text-base sm:text-lg font-bold text-[#111827] font-heading pt-1">
+                  {university.name}
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  Direct guidance for eligibility verification, provisional offer letters, scholarship applications, and Student e-Visa support.
+                <p className="text-xs text-slate-600 flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5 text-[#009B70] shrink-0" />
+                  {university.city}, {university.state}
                 </p>
               </div>
 
-              <div className="p-6 space-y-5">
-                {/* 4-Step Fast-Track Roadmap */}
-                <div className="space-y-2.5">
-                  <span className="text-xs font-semibold text-slate-700 block">
-                    Simple 4-Step Admission Process
-                  </span>
-                  {[
-                    {
-                      step: "1",
-                      title: "Submit Online Application",
-                      time: "5 Mins",
-                    },
-                    {
-                      step: "2",
-                      title: "Document & Scholarship Review",
-                      time: "24–48 Hrs",
-                    },
-                    {
-                      step: "3",
-                      title: "Receive Offer Letter",
-                      time: "7–10 Days",
-                    },
-                    {
-                      step: "4",
-                      title: "Visa & Campus Onboarding",
-                      time: "Full Support",
-                    },
-                  ].map((item) => (
-                    <div
-                      key={item.step}
-                      className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/60"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span className="w-5 h-5 rounded-full bg-emerald-600 text-white font-semibold text-[11px] flex items-center justify-center shrink-0">
-                          {item.step}
-                        </span>
-                        <span className="font-medium text-slate-800">
-                          {item.title}
-                        </span>
-                      </div>
-                      <span className="text-xs text-emerald-700 font-medium">
-                        {item.time}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Direct Contact Details */}
-                <div className="space-y-2.5 pt-3 border-t border-slate-100 text-xs sm:text-sm">
-                  <span className="text-xs font-semibold text-slate-700 block">
-                    Direct Contact Information
-                  </span>
-                  <div className="flex items-center gap-2.5 text-slate-600">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
-                      <Mail className="w-4 h-4" />
-                    </div>
-                    <span className="truncate">{university.contactEmail}</span>
+              <div className="p-5 space-y-4">
+                {/* Key Status & Fee Summary */}
+                <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3.5 space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Admission Status:</span>
+                    <span className="font-bold text-[#007A59] inline-flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#009B70]" />
+                      Open for International Students
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2.5 text-slate-600">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
-                      <Phone className="w-4 h-4" />
-                    </div>
-                    <span>{university.contactPhone}</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Starting Tuition Fee:</span>
+                    <span className="font-bold text-[#111827]">
+                      {formatMoney(minAnnualTuitionINR)} / year
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Merit Scholarship:</span>
+                    <span className="font-semibold text-[#007A59]">
+                      {university.scholarshipAvailable
+                        ? "Up to 50% Tuition Waiver"
+                        : "As per University Quota"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Application Processing:</span>
+                    <span className="font-bold text-[#111827]">
+                      Free (₹0 via StudyIndia)
+                    </span>
                   </div>
                 </div>
 
                 {/* Primary & Secondary CTAs */}
-                <div className="space-y-2.5 pt-2">
+                <div className="space-y-2.5">
                   <Link
                     href={`/register?universityId=${university.id}`}
                     className="block"
                   >
-                    <Button className="w-full h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm gap-2 shadow-xs cursor-pointer">
-                      <span>Start Application</span>
+                    <Button className="w-full h-11 rounded-xl bg-[#009B70] hover:bg-[#007A59] text-white font-semibold text-sm gap-2 shadow-2xs cursor-pointer">
+                      <span>Apply Now</span>
                       <ArrowRight className="w-4 h-4" />
                     </Button>
                   </Link>
-                  <Link href="/contact" className="block">
-                    <Button
-                      variant="outline"
-                      className="w-full h-10 rounded-xl border-slate-300 hover:border-emerald-300 text-slate-700 font-semibold text-xs sm:text-sm cursor-pointer"
-                    >
-                      Speak with a Counselor
-                    </Button>
-                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={() => setCallbackModalOpen(true)}
+                    className="w-full h-10 rounded-xl bg-white hover:bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#009B70]/50 text-[#111827] font-semibold text-xs sm:text-sm inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                  >
+                    <Phone className="w-4 h-4 text-[#009B70]" />
+                    <span>Request a Callback</span>
+                  </button>
+
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full h-10 rounded-xl bg-[#ECFDF5] hover:bg-emerald-100/80 border border-emerald-200 text-[#007A59] font-semibold text-xs sm:text-sm inline-flex items-center justify-center gap-2 transition-colors"
+                  >
+                    <MessageSquare className="w-4 h-4 text-[#009B70]" />
+                    <span>WhatsApp Admissions Desk</span>
+                  </a>
+                </div>
+
+                {/* Direct University Contact Details */}
+                <div className="pt-3 border-t border-[#E2E8F0] space-y-2 text-xs">
+                  <span className="font-semibold text-[#111827] block">
+                    Direct Admissions Contact
+                  </span>
+                  <div className="flex items-center gap-2 text-slate-600">
+                    <Mail className="w-3.5 h-3.5 text-[#009B70] shrink-0" />
+                    <span className="truncate">{university.contactEmail}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-600">
+                    <Phone className="w-3.5 h-3.5 text-[#009B70] shrink-0" />
+                    <span>{university.contactPhone}</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Card 2: Interactive Document Checklist */}
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs space-y-4">
+            {/* Quick Section Jump Card */}
+            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-2xs space-y-3">
               <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-xs font-medium text-emerald-700 block">
-                    Application Checklist
-                  </span>
-                  <h4 className="font-bold text-slate-900 text-base font-heading">
-                    Documents Needed
-                  </h4>
-                </div>
-                <span className="px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold text-xs">
-                  {docProgress}% Ready
+                <span className="text-xs font-bold text-[#111827]">
+                  Quick Tools &amp; Calculators
+                </span>
+                <span className="text-[11px] font-semibold text-[#007A59]">
+                  {currency}
                 </span>
               </div>
-
-              {/* Progress Bar */}
-              <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                <div
-                  className="h-full bg-emerald-600 transition-all duration-300"
-                  style={{ width: `${docProgress}%` }}
-                />
-              </div>
-
-              <p className="text-xs text-slate-500">
-                Check off the documents you have ready for your application:
-              </p>
-
-              <div className="space-y-2">
-                {DOCUMENT_CHECKLIST.map((doc) => {
-                  const checked = checkedDocs.includes(doc.id);
+              <div className="space-y-1.5">
+                {[
+                  {
+                    id: "fee-calculator",
+                    label: "Interactive Fee & Scholarship Calculator",
+                    icon: Calculator,
+                  },
+                  {
+                    id: "programmes",
+                    label: `Browse All ${allProgrammes.length} Programmes`,
+                    icon: BookOpen,
+                  },
+                  {
+                    id: "document-checklist",
+                    label: `Document Checklist (${docProgress}% Ready)`,
+                    icon: CheckSquare,
+                  },
+                ].map((item) => {
+                  const Icon = item.icon;
                   return (
                     <button
-                      key={doc.id}
+                      key={item.id}
                       type="button"
-                      onClick={() => toggleDoc(doc.id)}
-                      className={`w-full text-left p-3 rounded-xl border transition-all flex items-start gap-3 cursor-pointer ${
-                        checked
-                          ? "bg-emerald-50/50 border-emerald-300 text-slate-900"
-                          : "bg-slate-50/60 border-slate-200/80 text-slate-600 hover:border-slate-300"
-                      }`}
+                      onClick={() => scrollToSection(item.id)}
+                      className="w-full text-left p-2.5 rounded-xl bg-[#F8FAFC] hover:bg-[#ECFDF5] border border-[#E2E8F0] hover:border-emerald-200 text-xs font-semibold text-[#111827] hover:text-[#007A59] flex items-center justify-between transition-colors cursor-pointer"
                     >
-                      {checked ? (
-                        <CheckSquare className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                      ) : (
-                        <Square className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
-                      )}
-                      <div>
-                        <span className="text-xs sm:text-sm font-semibold block text-slate-800">
-                          {doc.title}
-                        </span>
-                        <span className="text-xs text-slate-500">
-                          {doc.subtitle}
-                        </span>
-                      </div>
+                      <span className="flex items-center gap-2">
+                        <Icon className="w-3.5 h-3.5 text-[#009B70]" />
+                        <span>{item.label}</span>
+                      </span>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
                     </button>
                   );
                 })}
               </div>
-
-              {docProgress === 100 && (
-                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center justify-between">
-                  <span>Your documents are ready to apply!</span>
-                  <Link
-                    href={`/register?universityId=${university.id}`}
-                    className="underline font-bold text-emerald-700"
-                  >
-                    Apply Now →
-                  </Link>
-                </div>
-              )}
             </div>
           </div>
         </div>
 
         {/* ══════════════════════════════════════════════════════════════════
-            3. SIMILAR ACCREDITED UNIVERSITIES SECTION
+            SIMILAR ACCREDITED UNIVERSITIES SECTION
            ══════════════════════════════════════════════════════════════════ */}
         {similarUniversities.length > 0 && (
-          <section className="mt-16 pt-12 border-t border-slate-200/80 space-y-6">
+          <section className="mt-16 pt-12 border-t border-[#E2E8F0] space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
               <div>
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-3 py-1 rounded-full mb-2">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#007A59] bg-[#ECFDF5] border border-emerald-200 px-3 py-1 rounded-full mb-2">
                   <Compass className="w-3.5 h-3.5" />
-                  Similar Universities
+                  Compare Similar Institutions
                 </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 font-heading">
-                  Explore Other Accredited Universities
+                <h2 className="text-xl sm:text-2xl font-bold text-[#111827] font-heading">
+                  Other Accredited Universities You May Consider
                 </h2>
               </div>
               <Link
                 href="/universities"
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700 hover:text-emerald-800"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#009B70] hover:text-[#007A59]"
               >
-                <span>View All Universities</span>
+                <span>Explore All Universities</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -1450,7 +3341,7 @@ export function UniversityDetailClient({
                 <Link
                   key={sim.id}
                   href={`/universities/${sim.slug}`}
-                  className="group bg-white rounded-2xl border border-slate-200/90 hover:border-emerald-300 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+                  className="group bg-white rounded-2xl border border-[#E2E8F0] hover:border-[#009B70] overflow-hidden shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between"
                 >
                   <div>
                     <div className="relative h-44 w-full overflow-hidden bg-slate-100">
@@ -1458,11 +3349,12 @@ export function UniversityDetailClient({
                       <img
                         src={sim.image}
                         alt={sim.name}
+                        loading="lazy"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-900/65 via-transparent to-transparent" />
                       <div className="absolute top-3 left-3">
-                        <span className="px-2.5 py-1 rounded-md bg-white/95 text-emerald-800 font-semibold text-xs shadow-2xs">
+                        <span className="px-2.5 py-1 rounded-md bg-white/95 text-[#007A59] font-bold text-xs shadow-2xs">
                           {sim.naacGrade.includes("UGC")
                             ? sim.naacGrade
                             : `NAAC ${sim.naacGrade}`}
@@ -1477,22 +3369,22 @@ export function UniversityDetailClient({
                     </div>
 
                     <div className="p-5 space-y-2">
-                      <h3 className="text-base font-bold text-slate-900 group-hover:text-emerald-700 transition-colors font-heading">
+                      <h3 className="text-base font-bold text-[#111827] group-hover:text-[#009B70] transition-colors font-heading">
                         {sim.name}
                       </h3>
-                      <p className="text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed">
+                      <p className="text-xs sm:text-sm text-[#475569] line-clamp-2 leading-relaxed">
                         {sim.description}
                       </p>
                     </div>
                   </div>
 
-                  <div className="px-5 py-3.5 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between text-xs">
+                  <div className="px-5 py-3.5 bg-[#F8FAFC] border-t border-[#E2E8F0] flex items-center justify-between text-xs">
                     <span className="text-slate-600 font-medium">
-                      <Users className="w-3.5 h-3.5 inline mr-1 text-emerald-600" />
-                      {sim.nepaliStudentCount}+ Global Students
+                      <Users className="w-3.5 h-3.5 inline mr-1 text-[#009B70]" />
+                      {sim.nepaliStudentCount.toLocaleString()}+ Intl. Students
                     </span>
-                    <span className="font-semibold text-emerald-700 group-hover:translate-x-0.5 transition-transform inline-flex items-center gap-1">
-                      View Campus <ArrowRight className="w-3.5 h-3.5" />
+                    <span className="font-semibold text-[#009B70] inline-flex items-center gap-1">
+                      View Details <ArrowRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
                 </Link>
@@ -1501,6 +3393,509 @@ export function UniversityDetailClient({
           </section>
         )}
       </div>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          SECTION 16: MOBILE FIXED BOTTOM CTA BAR
+         ══════════════════════════════════════════════════════════════════════ */}
+      <div className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white border-t border-[#E2E8F0] px-4 py-3 shadow-lg">
+        <div className="max-w-lg mx-auto flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <span className="text-[10px] font-semibold text-slate-500 block truncate">
+              {university.name}
+            </span>
+            <span className="text-sm font-extrabold text-[#111827] block">
+              From {formatMoney(minAnnualTuitionINR)}
+              <span className="text-[11px] font-normal text-slate-500">/yr</span>
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setCallbackModalOpen(true)}
+              className="h-10 px-3.5 rounded-xl bg-[#ECFDF5] border border-emerald-200 text-[#007A59] font-semibold text-xs cursor-pointer"
+            >
+              Enquire Now
+            </button>
+            <Link href={`/register?universityId=${university.id}`}>
+              <Button className="h-10 px-4 rounded-xl bg-[#009B70] hover:bg-[#007A59] text-white font-semibold text-xs gap-1 cursor-pointer">
+                <span>Apply Now</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          MODAL 1: DETAILED PROGRAMME VIEW (Section 5 Requirement)
+         ══════════════════════════════════════════════════════════════════════ */}
+      {detailModalProgramme && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
+          onClick={() => setDetailModalProgramme(null)}
+        >
+          <div
+            className="bg-white rounded-2xl border border-[#E2E8F0] max-w-2xl w-full p-6 sm:p-8 shadow-xl space-y-5 my-8 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-[#E2E8F0] pb-4">
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-md bg-[#ECFDF5] text-[#007A59] border border-emerald-200 text-xs font-bold">
+                    {detailModalProgramme.degree}
+                  </span>
+                  <span className="text-xs font-medium text-slate-500">
+                    {detailModalProgramme.duration}
+                  </span>
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold text-[#111827] font-heading">
+                  {detailModalProgramme.title}
+                </h3>
+                <p className="text-xs sm:text-sm font-medium text-[#007A59]">
+                  Specialisation: {detailModalProgramme.specialisation}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDetailModalProgramme(null)}
+                className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs sm:text-sm text-[#475569]">
+              <div>
+                <h4 className="font-bold text-[#111827] mb-1">Programme Overview</h4>
+                <p className="leading-relaxed">{detailModalProgramme.overview}</p>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-[#111827] mb-1.5">
+                  Curriculum &amp; Core Subjects
+                </h4>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {detailModalProgramme.curriculumHighlights.map((sub, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start gap-2 p-2.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs text-[#111827]"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#009B70] shrink-0 mt-0.5" />
+                      <span>{sub}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
+                  <span className="font-bold text-[#111827] block text-xs">
+                    Eligibility Requirements
+                  </span>
+                  <p className="text-xs">{detailModalProgramme.eligibility}</p>
+                  <p className="text-[11px] text-slate-500">
+                    Subjects: {detailModalProgramme.requiredSubjects.join(", ")}
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
+                  <span className="font-bold text-[#111827] block text-xs">
+                    Admission &amp; Equivalence
+                  </span>
+                  <p className="text-xs">
+                    {detailModalProgramme.admissionRequirements}
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl bg-[#ECFDF5] border border-emerald-200 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <span className="text-[11px] text-[#007A59] block">
+                    Annual Tuition Fee
+                  </span>
+                  <span className="text-base font-extrabold text-[#111827]">
+                    {formatMoney(detailModalProgramme.annualFeeINR)} / yr
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[11px] text-[#007A59] block">
+                    Est. With 30% Scholarship
+                  </span>
+                  <span className="text-base font-extrabold text-[#007A59]">
+                    {formatMoney(Math.round(detailModalProgramme.annualFeeINR * 0.7))} / yr
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[11px] text-[#007A59] block">
+                    Total Duration Fee (Base)
+                  </span>
+                  <span className="text-base font-extrabold text-[#111827]">
+                    {formatMoney(
+                      detailModalProgramme.annualFeeINR *
+                        detailModalProgramme.durationYears
+                    )}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-[#111827] mb-1.5">
+                  Career Opportunities
+                </h4>
+                <div className="flex flex-wrap gap-1.5">
+                  {detailModalProgramme.careers.map((c, i) => (
+                    <span
+                      key={i}
+                      className="px-2.5 py-1 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-xs font-medium text-[#111827]"
+                    >
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-[#E2E8F0]">
+              {detailModalProgramme.courseLink && (
+                <Link
+                  href={detailModalProgramme.courseLink}
+                  className="h-10 px-4 rounded-xl bg-[#F8FAFC] hover:bg-slate-100 border border-[#E2E8F0] text-xs font-semibold text-[#111827] inline-flex items-center gap-1.5"
+                >
+                  <span>Open Dedicated Course Page</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </Link>
+              )}
+              <Link
+                href={
+                  detailModalProgramme.courseLink
+                    ? `/register?courseId=${detailModalProgramme.id}&universityId=${university.id}`
+                    : `/register?universityId=${university.id}`
+                }
+              >
+                <Button className="h-10 px-5 rounded-xl bg-[#009B70] hover:bg-[#007A59] text-white font-semibold text-xs gap-1.5 cursor-pointer">
+                  <span>Apply for {detailModalProgramme.degree}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          MODAL 2: COMPARE UP TO 3 PROGRAMMES SIDE-BY-SIDE (Section 5)
+         ══════════════════════════════════════════════════════════════════════ */}
+      {showCompareModal && comparedProgrammes.length > 0 && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
+          onClick={() => setShowCompareModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl border border-[#E2E8F0] max-w-4xl w-full p-6 sm:p-8 shadow-xl space-y-5 my-8 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-4">
+              <div>
+                <span className="text-xs font-bold text-[#007A59] block">
+                  Side-by-Side Programme Comparison
+                </span>
+                <h3 className="text-lg sm:text-xl font-bold text-[#111827] font-heading">
+                  Comparing {comparedProgrammes.length} Programme(s) at {university.name}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCompareModal(false)}
+                className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs sm:text-sm border-collapse">
+                <thead>
+                  <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
+                    <th className="p-3.5 font-bold text-slate-500 w-40">Feature</th>
+                    {comparedProgrammes.map((p) => (
+                      <th key={p.id} className="p-3.5 font-bold text-[#111827]">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <span className="px-2 py-0.5 rounded bg-[#ECFDF5] text-[#007A59] text-[11px] font-bold">
+                              {p.degree}
+                            </span>
+                            <div className="mt-1">{p.title}</div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => toggleCompareProgramme(p.id)}
+                            className="text-slate-400 hover:text-red-600 cursor-pointer"
+                            title="Remove"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#E2E8F0]">
+                  <tr>
+                    <td className="p-3.5 font-semibold text-slate-600">Specialisation</td>
+                    {comparedProgrammes.map((p) => (
+                      <td key={p.id} className="p-3.5 text-[#111827] font-medium">
+                        {p.specialisation}
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="p-3.5 font-semibold text-slate-600">Duration</td>
+                    {comparedProgrammes.map((p) => (
+                      <td key={p.id} className="p-3.5 text-slate-700">
+                        {p.duration}
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="p-3.5 font-semibold text-slate-600">Annual Tuition</td>
+                    {comparedProgrammes.map((p) => (
+                      <td key={p.id} className="p-3.5 font-bold text-[#111827]">
+                        {formatMoney(p.annualFeeINR)} / yr
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="p-3.5 font-semibold text-slate-600">
+                      Est. Fee (30% Waiver)
+                    </td>
+                    {comparedProgrammes.map((p) => (
+                      <td key={p.id} className="p-3.5 font-bold text-[#007A59]">
+                        {formatMoney(Math.round(p.annualFeeINR * 0.7))} / yr
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="p-3.5 font-semibold text-slate-600">Eligibility</td>
+                    {comparedProgrammes.map((p) => (
+                      <td key={p.id} className="p-3.5 text-xs text-slate-600">
+                        {p.eligibility}
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="p-3.5 font-semibold text-slate-600">Career Paths</td>
+                    {comparedProgrammes.map((p) => (
+                      <td key={p.id} className="p-3.5 text-xs text-slate-600">
+                        {p.careers.join(", ")}
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="p-3.5 font-semibold text-slate-600">Action</td>
+                    {comparedProgrammes.map((p) => (
+                      <td key={p.id} className="p-3.5">
+                        <Link href={`/register?universityId=${university.id}&courseId=${p.id}`}>
+                          <Button
+                            size="sm"
+                            className="w-full h-9 rounded-xl bg-[#009B70] hover:bg-[#007A59] text-white text-xs font-semibold cursor-pointer"
+                          >
+                            Apply for {p.degree}
+                          </Button>
+                        </Link>
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          MODAL 3: CAMPUS GALLERY LIGHTBOX (Section 8)
+         ══════════════════════════════════════════════════════════════════════ */}
+      {lightboxItem && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={() => setLightboxItem(null)}
+        >
+          <div
+            className="bg-white rounded-2xl border border-[#E2E8F0] max-w-2xl w-full overflow-hidden shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative h-72 sm:h-96 w-full bg-slate-900">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={lightboxItem.image}
+                alt={lightboxItem.title}
+                className="w-full h-full object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => setLightboxItem(null)}
+                className="absolute top-3 right-3 p-2 rounded-full bg-slate-900/70 text-white hover:bg-slate-900 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-5 space-y-1.5">
+              <span className="px-2.5 py-0.5 rounded-md bg-[#ECFDF5] text-[#007A59] text-xs font-bold">
+                {lightboxItem.category}
+              </span>
+              <h3 className="text-base font-bold text-[#111827] font-heading">
+                {lightboxItem.title}
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                {lightboxItem.description}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          MODAL 4: REQUEST A CALLBACK / ENQUIRY MODAL (Section 16)
+         ══════════════════════════════════════════════════════════════════════ */}
+      {callbackModalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={() => setCallbackModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-2xl border border-[#E2E8F0] max-w-md w-full p-6 shadow-xl space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-3 border-b border-[#E2E8F0] pb-3">
+              <div>
+                <span className="text-xs font-bold text-[#007A59] block">
+                  Official Admissions Counseling
+                </span>
+                <h3 className="text-lg font-bold text-[#111827] font-heading">
+                  Request a Callback — {university.name}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCallbackModalOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {callbackSubmitted ? (
+              <div className="p-5 rounded-xl bg-[#ECFDF5] border border-emerald-200 text-center space-y-3">
+                <CheckCircle2 className="w-10 h-10 text-[#009B70] mx-auto" />
+                <h4 className="text-base font-bold text-[#111827]">
+                  Callback Request Received!
+                </h4>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Our International Admissions Counselor for <strong>{university.name}</strong> will contact you shortly on your phone/WhatsApp with fee and scholarship details.
+                </p>
+                <Button
+                  onClick={() => {
+                    setCallbackSubmitted(false);
+                    setCallbackModalOpen(false);
+                  }}
+                  className="w-full h-10 rounded-xl bg-[#009B70] text-white text-xs font-semibold cursor-pointer"
+                >
+                  Done
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleCallbackSubmit} className="space-y-3.5 text-xs">
+                <div>
+                  <label className="font-bold text-[#111827] block mb-1">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={callbackForm.name}
+                    onChange={(e) =>
+                      setCallbackForm({ ...callbackForm, name: e.target.value })
+                    }
+                    placeholder="Enter your full name"
+                    className="w-full h-10 px-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-[#111827] focus:outline-none focus:border-[#009B70]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-[#111827] block mb-1">
+                      Country *
+                    </label>
+                    <select
+                      value={callbackForm.country}
+                      onChange={(e) =>
+                        setCallbackForm({ ...callbackForm, country: e.target.value })
+                      }
+                      className="w-full h-10 px-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-[#111827] focus:outline-none focus:border-[#009B70]"
+                    >
+                      <option value="Nepal">Nepal</option>
+                      <option value="Bhutan">Bhutan</option>
+                      <option value="Bangladesh">Bangladesh</option>
+                      <option value="India">India (NRI)</option>
+                      <option value="Other International">Other Country</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="font-bold text-[#111827] block mb-1">
+                      Phone / WhatsApp *
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={callbackForm.phone}
+                      onChange={(e) =>
+                        setCallbackForm({ ...callbackForm, phone: e.target.value })
+                      }
+                      placeholder="+977 98XXXXXXXX"
+                      className="w-full h-10 px-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-[#111827] focus:outline-none focus:border-[#009B70]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-bold text-[#111827] block mb-1">
+                    Preferred Programme
+                  </label>
+                  <select
+                    value={callbackForm.programme}
+                    onChange={(e) =>
+                      setCallbackForm({ ...callbackForm, programme: e.target.value })
+                    }
+                    className="w-full h-10 px-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-[#111827] focus:outline-none focus:border-[#009B70]"
+                  >
+                    {allProgrammes.map((p) => (
+                      <option key={p.id} value={p.title}>
+                        {p.degree} — {p.specialisation}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full h-11 rounded-xl bg-[#009B70] hover:bg-[#007A59] text-white font-semibold text-xs sm:text-sm cursor-pointer"
+                >
+                  Submit Callback Request
+                </Button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

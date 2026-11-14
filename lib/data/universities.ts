@@ -9,6 +9,7 @@ export interface University {
   nirfRank?: number;
   establishedYear: number;
   campusSize: string;
+  totalStudents?: string;
   nepaliStudentCount: number;
   description: string;
   highlights: string[];
@@ -20,6 +21,13 @@ export interface University {
   scholarshipAvailable: boolean;
   contactEmail: string;
   contactPhone: string;
+  campusAddress?: string;
+  nearestAirport?: string;
+  nearestRailway?: string;
+  placementRate?: string;
+  averagePackage?: string;
+  highestPackage?: string;
+  topRecruiters?: string[];
 }
 
 export const universitiesData: University[] = [

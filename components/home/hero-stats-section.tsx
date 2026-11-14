@@ -450,8 +450,8 @@ export function HeroStatsSection() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         {/* ── Top Executive Header & Perspective Controller ── */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-6 border-b border-slate-200/80">
-          <div className="space-y-2 max-w-2xl">
+        <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 pb-6 border-b border-slate-200/80">
+          <div className="space-y-2 max-w-xl">
             {/* Live Telemetry Pill */}
             <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-emerald-50/90 border border-emerald-200/90 shadow-2xs">
               <span className="relative flex h-2.5 w-2.5">
@@ -480,44 +480,44 @@ export function HeroStatsSection() {
           </div>
 
           {/* Interactive Mode Switcher Tabs */}
-          <div className="inline-flex items-center p-1.5 rounded-2xl bg-slate-100/90 border border-slate-200/80 shadow-2xs self-start lg:self-end">
+          <div className="inline-flex flex-wrap sm:flex-nowrap items-center gap-1 p-1.5 rounded-2xl bg-slate-100/90 border border-slate-200/80 shadow-2xs self-start xl:self-end shrink-0">
             <button
               type="button"
               onClick={() => setActiveTab("flagship")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition-all duration-200 cursor-pointer ${
                 activeTab === "flagship"
                   ? "bg-white text-slate-900 shadow-sm border border-slate-200/70"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <Award className="w-3.5 h-3.5 text-emerald-600" />
+              <Award className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
               <span>Flagship Metrics</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("calculator")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition-all duration-200 cursor-pointer ${
                 activeTab === "calculator"
                   ? "bg-white text-slate-900 shadow-sm border border-slate-200/70"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <Calculator className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Tuition & ROI Estimator</span>
+              <Calculator className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>Course Fee &amp; Placement Comparison</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("accreditation")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition-all duration-200 cursor-pointer ${
                 activeTab === "accreditation"
                   ? "bg-white text-slate-900 shadow-sm border border-slate-200/70"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Accreditation Vault</span>
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>Quality &amp; Accreditation Standards</span>
             </button>
           </div>
         </div>
@@ -1041,13 +1041,13 @@ export function HeroStatsSection() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {Object.entries(streamData).map(([key, item]) => (
                   <button
                     key={key}
                     type="button"
                     onClick={() => setSelectedStream(key)}
-                    className={`p-4 rounded-2xl text-left border transition-all cursor-pointer flex flex-col justify-between gap-2 ${
+                    className={`p-5 rounded-2xl text-left border transition-all cursor-pointer flex flex-col justify-start gap-2.5 ${
                       selectedStream === key
                         ? "bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/50 border-emerald-500 shadow-xs ring-1 ring-emerald-400/40"
                         : "bg-slate-50/60 border-slate-200/80 hover:bg-slate-100/70 hover:border-slate-300 text-slate-700"
@@ -1060,7 +1060,7 @@ export function HeroStatsSection() {
                       {item.programmes.map((prog, idx) => (
                         <div
                           key={idx}
-                          className={`text-[11.5px] font-medium leading-snug ${
+                          className={`text-xs font-semibold leading-snug ${
                             selectedStream === key ? "text-emerald-800" : "text-slate-600"
                           }`}
                         >
@@ -1070,60 +1070,6 @@ export function HeroStatsSection() {
                     </div>
                   </button>
                 ))}
-              </div>
-            </div>
-
-            {/* Calculated Results Bento */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
-              <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-50/60 to-teal-50/40 border border-emerald-200/80 space-y-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">
-                  Estimated Average Tuition
-                </span>
-                <div className="text-2xl sm:text-3xl font-black text-slate-900 font-heading">
-                  {formatCost(
-                    currentStreamInfo.annualFeeINR,
-                    currentStreamInfo.annualFeeUSD,
-                    currentStreamInfo.annualFeeNPR
-                  )}
-                </div>
-                <div className="text-xs font-semibold text-emerald-700 inline-flex items-center gap-1.5 pt-1">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>{currentStreamInfo.scholarshipWaiver}</span>
-                </div>
-              </div>
-
-              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
-                  Top Campus Placement Track
-                </span>
-                <div className="text-2xl sm:text-3xl font-black text-slate-900 font-heading">
-                  {currentStreamInfo.avgPackageLPA} LPA
-                  <span className="text-sm font-semibold text-slate-500 ml-1.5 font-sans">
-                    (~${(currentStreamInfo.avgPackageLPA * 1200).toLocaleString("en-US")}/yr)
-                  </span>
-                </div>
-                <div className="text-xs text-slate-500 pt-1">
-                  Average campus recruitment across Google, Microsoft, Amazon &amp; TCS
-                </div>
-              </div>
-
-              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
-                  High-Demand Global Careers
-                </span>
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {currentStreamInfo.popularCareers.map((c, i) => (
-                    <span
-                      key={i}
-                      className="px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-[10.5px] font-semibold text-slate-700"
-                    >
-                      {c}
-                    </span>
-                  ))}
-                </div>
-                <div className="text-[11px] text-slate-400 pt-1">
-                  Eligible for global professional licensure (TU, NEC, NMC, USMLE)
-                </div>
               </div>
             </div>
 
@@ -1235,30 +1181,15 @@ export function HeroStatsSection() {
                     Official Recognition &amp; Accreditation
                   </span>
                   <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-bold text-slate-800 font-heading uppercase tracking-wide">
-                    • Recognised &amp; Quality-Assessed Institutions
+                    • Quality &amp; Regulatory Standards
                   </span>
                 </div>
                 <h4 className="sm:hidden text-xs font-extrabold text-slate-900 font-heading tracking-wide uppercase mt-1">
-                  Recognised &amp; Quality-Assessed Institutions
+                  Quality &amp; Regulatory Standards
                 </h4>
                 <p className="text-xs text-slate-500 font-medium mt-0.5">
-                  University Recognition, Institutional Accreditation &amp; Regulatory Approvals as Applicable.
+                  Institutional Recognition, Accreditation &amp; Approvals as Applicable to Individual Universities and Academic Programmes.
                 </p>
-              </div>
-            </div>
-
-            {/* Right Statutory Seal (Eliminates top-right whitespace) */}
-            <div className="flex items-center gap-2 self-start lg:self-center bg-slate-50/90 border border-slate-200/80 rounded-xl px-3 py-2 shrink-0">
-              <div className="w-6 h-6 rounded-lg bg-gradient-to-b from-emerald-400 to-teal-700 text-white flex items-center justify-center shadow-[0_3px_8px_-2px_rgba(16,185,129,0.5),inset_0_1px_1px_rgba(255,255,255,0.6)] shrink-0">
-                <Check className="w-3.5 h-3.5 stroke-[3] drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]" />
-              </div>
-              <div className="text-[11px] leading-tight">
-                <span className="font-bold text-slate-800 block">
-                  100% Statutory Compliance
-                </span>
-                <span className="text-slate-500 text-[10px]">
-                  Verified Global Degree Equivalence
-                </span>
               </div>
             </div>
           </div>
@@ -1268,7 +1199,7 @@ export function HeroStatsSection() {
             {[
               {
                 title: "UGC Recognised Universities",
-                sub: "Under UGC Act, 1956",
+                sub: "✓ Recognised Under UGC Act",
                 icon: Landmark,
                 bevelBg: "from-emerald-300 via-emerald-500 to-teal-900",
                 coreBg: "from-[#10b981] via-[#059669] to-[#064e3b]",
@@ -1276,15 +1207,15 @@ export function HeroStatsSection() {
               },
               {
                 title: "NAAC Accredited Institutions",
-                sub: "A++ Grade Where Applicable",
+                sub: "✓ Quality Assessed Campuses",
                 icon: Award,
                 bevelBg: "from-amber-300 via-amber-500 to-amber-900",
                 coreBg: "from-[#f59e0b] via-[#d97706] to-[#78350f]",
                 glow: "rgba(245,158,11,0.45)",
               },
               {
-                title: "AICTE Approved Programmes",
-                sub: "Technical Norms Where Applicable",
+                title: "AICTE Approved Institutions & Programmes",
+                sub: "✓ Where Applicable",
                 icon: ShieldCheck,
                 bevelBg: "from-teal-300 via-teal-500 to-cyan-900",
                 coreBg: "from-[#14b8a6] via-[#0d9488] to-[#134e4a]",
@@ -1292,7 +1223,7 @@ export function HeroStatsSection() {
               },
               {
                 title: "AIU Member Universities",
-                sub: "Global Degree Equivalence",
+                sub: "✓ Association of Indian Universities",
                 icon: Globe2,
                 bevelBg: "from-sky-300 via-blue-500 to-indigo-900",
                 coreBg: "from-[#0ea5e9] via-[#0284c7] to-[#1e3a8a]",
@@ -1300,7 +1231,7 @@ export function HeroStatsSection() {
               },
               {
                 title: "NIRF Ranked Institutions",
-                sub: "Ministry of Education India",
+                sub: "✓ National Institutional Ranking",
                 icon: Sparkles,
                 bevelBg: "from-emerald-300 via-teal-500 to-emerald-900",
                 coreBg: "from-[#10b981] via-[#0d9488] to-[#064e3b]",

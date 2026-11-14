@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -35,7 +35,27 @@ export async function generateMetadata({ params }: PageProps) {
   };
 }
 
-export default async function CourseDetailPage({ params }: PageProps) {
+function CourseDetailSkeleton() {
+  return (
+    <div className="min-h-screen bg-slate-50 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 animate-pulse">
+        <div className="h-4 w-48 rounded-full bg-slate-200/80" />
+        <div className="bg-white rounded-3xl p-8 sm:p-10 border border-slate-200/90 shadow-sm space-y-6">
+          <div className="h-6 w-40 rounded-full bg-emerald-100/80" />
+          <div className="h-10 w-2/3 rounded-2xl bg-slate-200/90" />
+          <div className="h-5 w-1/3 rounded-xl bg-slate-200/70" />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-100">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-14 rounded-xl bg-slate-200/60" />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+async function CourseDetailContent({ params }: PageProps) {
   const { id } = await params;
   const course = coursesData.find((c) => c.id === id);
 
@@ -223,5 +243,13 @@ export default async function CourseDetailPage({ params }: PageProps) {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CourseDetailPage({ params }: PageProps) {
+  return (
+    <Suspense fallback={<CourseDetailSkeleton />}>
+      <CourseDetailContent params={params} />
+    </Suspense>
   );
 }
