@@ -243,38 +243,47 @@ export function AboutInteractiveShowcase() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
               </span>
               <span className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-300 font-heading">
-                Our Purpose & Global Ethical Charter • 50+ Countries
+                Our Mission &amp; Commitment
               </span>
             </div>
 
             <h1 className="text-3xl sm:text-5xl lg:text-[52px] font-black tracking-tight leading-[1.08] font-heading text-white">
-              Dedicated to{" "}
+              Making{" "}
               <span className="bg-gradient-to-r from-emerald-300 via-teal-200 to-amber-200 bg-clip-text text-transparent">
-                Transparent Higher Education
+                Quality Indian Education
               </span>{" "}
-              in India for the World
+              Accessible to the World
             </h1>
 
-            <p className="text-slate-300 text-base sm:text-lg leading-relaxed max-w-2xl">
-              We connect ambitious international students across{" "}
-              <span className="text-white font-semibold">
-                Africa, the Middle East, Southeast Asia, Central Asia, and SAARC
-              </span>{" "}
-              with{" "}
-              <span className="text-white font-semibold">
-                300+ NAAC A++ & NIRF-ranked Indian universities and institutions
-              </span>{" "}
-              through verifiable eligibility audits, direct registrar applications, and{" "}
-              <span className="text-emerald-300 font-semibold">zero hidden agency markups</span>.
-            </p>
+            <div className="space-y-4 max-w-2xl">
+              <p className="text-slate-200 text-base sm:text-lg leading-relaxed">
+                We connect international students from{" "}
+                <span className="text-white font-semibold">
+                  Africa, the Middle East, South Asia, Southeast Asia, Central Asia and SAARC countries
+                </span>{" "}
+                with leading universities and educational institutions across India.
+              </p>
+
+              <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+                Our services include{" "}
+                <span className="text-white font-medium">
+                  university selection, admission guidance, eligibility assessment, student visa assistance, transcript evaluation, scholarship guidance and application support
+                </span>{" "}
+                — ensuring a{" "}
+                <span className="text-emerald-300 font-semibold">
+                  transparent, reliable and student-focused admission journey
+                </span>
+                .
+              </p>
+            </div>
 
             {/* Trust Badges Strip */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
               {[
-                "Zero Consultancy Fees",
-                "Direct University Gazette Tuition",
-                "WHO • ABET • WES • UGC Verified",
-                "Global Student Concierge Desks",
+                "No Hidden Admission Charges",
+                "Direct University Fee Payment",
+                "Verified University Credentials",
+                "Global Student Support Desk",
               ].map((tag, i) => (
                 <span
                   key={i}
@@ -290,51 +299,52 @@ export function AboutInteractiveShowcase() {
           {/* Right 5 Cols: Audited Global Governance Telemetry Card */}
           <div className="lg:col-span-5">
             <div className="relative rounded-3xl bg-white/[0.06] backdrop-blur-2xl border border-white/15 p-6 sm:p-7 shadow-2xl space-y-5">
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <div>
+              <div className="flex items-start justify-between gap-3 border-b border-white/10 pb-4">
+                <div className="min-w-0">
                   <div className="text-xs font-bold uppercase tracking-wider text-emerald-300">
                     Global Institutional Impact
                   </div>
-                  <div className="text-sm font-extrabold text-white mt-0.5">
+                  <div className="text-sm font-extrabold text-white mt-0.5 leading-snug">
                     Official International Admissions Gateway
                   </div>
                 </div>
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                  ISO Verified
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 shrink-0 whitespace-nowrap">
+                  <ShieldCheck className="w-3 h-3 text-emerald-400 shrink-0" />
+                  <span>UGC Recognized</span>
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-3.5">
                 <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10">
-                  <div className="text-[11px] text-slate-400 font-medium">Global Students Placed</div>
+                  <div className="text-[11px] text-slate-400 font-medium">Students Supported</div>
                   <div className="text-2xl font-black text-white font-heading mt-0.5">
-                    5,000+
+                    10,000+
                   </div>
-                  <div className="text-[10.5px] text-emerald-300 mt-0.5">From 50+ Countries</div>
+                  <div className="text-[10.5px] text-emerald-300 mt-0.5">Students from 50+ Countries</div>
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10">
-                  <div className="text-[11px] text-slate-400 font-medium">Partner Universities</div>
+                  <div className="text-[11px] text-slate-400 font-medium">Universities &amp; Institutions</div>
                   <div className="text-2xl font-black text-emerald-300 font-heading mt-0.5">
                     300+
                   </div>
-                  <div className="text-[10.5px] text-slate-400 mt-0.5">NIRF Top-100 & NAAC A++</div>
+                  <div className="text-[10.5px] text-slate-400 mt-0.5">NIRF Ranked &amp; NAAC A++</div>
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10">
-                  <div className="text-[11px] text-slate-400 font-medium">Agency Markup Fee</div>
+                  <div className="text-[11px] text-slate-400 font-medium">Admission Success Rate</div>
                   <div className="text-2xl font-black text-amber-300 font-heading mt-0.5">
-                    $0 / ₹0
+                    98.4%
                   </div>
-                  <div className="text-[10.5px] text-slate-400 mt-0.5">100% Gazette Parity</div>
+                  <div className="text-[10.5px] text-slate-400 mt-0.5">Pre-Screened Verification</div>
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10">
-                  <div className="text-[11px] text-slate-400 font-medium">Degree Mobility</div>
+                  <div className="text-[11px] text-slate-400 font-medium">Premier Degree Programs</div>
                   <div className="text-2xl font-black text-white font-heading mt-0.5">
-                    Worldwide
+                    500+
                   </div>
-                  <div className="text-[10.5px] text-emerald-300 mt-0.5">WHO • ABET • WES • AIU</div>
+                  <div className="text-[10.5px] text-emerald-300 mt-0.5">UG, PG &amp; Research Programs</div>
                 </div>
               </div>
 
@@ -442,7 +452,7 @@ export function AboutInteractiveShowcase() {
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-2">
                 {[
                   "Authorized international admission desk for 300+ campuses",
-                  "Fast-track provisional admission offer letters in 7–10 working days",
+                  "Admission updates & provisional offer letters within 10–15 working days",
                   "Direct international hostel & airport pickup reservation",
                 ].map((pt, i) => (
                   <div key={i} className="flex items-start gap-2 text-xs text-slate-700 font-medium">
@@ -519,7 +529,7 @@ export function AboutInteractiveShowcase() {
               Traditional Overseas Agents vs. StudyIndia Global Gateway
             </h2>
             <p className="text-sm text-slate-600">
-              See why over 5,000+ international students and parents across 50+ countries choose our direct university gateway over commission-driven middlemen.
+              See why over 10,000+ international students and parents across 50+ countries choose our direct university gateway over commission-driven middlemen.
             </p>
           </div>
           <Link href="/register">
