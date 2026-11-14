@@ -365,18 +365,16 @@ export function AboutInteractiveShowcase() {
           SECTION 1: 3 CORE ETHICAL PILLARS (With Ultra-Premium 3D Jewels)
          ════════════════════════════════════════════════════════════════ */}
       <section className="space-y-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-emerald-700 mb-2">
-              <Scale className="w-3.5 h-3.5" />
-              <span>Part 01 • Our Three Non-Negotiable Pillars</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 font-heading tracking-tight">
-              Built on Uncompromising Global Student Trust
-            </h2>
+        <div className="max-w-3xl space-y-3">
+          <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-emerald-700">
+            <Scale className="w-3.5 h-3.5" />
+            <span>PART 1 | OUR THREE NON-NEGOTIABLE PILLARS</span>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 max-w-md">
-            Every policy on our platform is engineered to protect international students and families from opaque middleman agencies.
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 font-heading tracking-tight">
+            Built on Uncompromising Trust &amp; Transparency
+          </h2>
+          <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+            Our platform is built around the trust, safety and interests of international students and their families. Every policy and service is designed to promote transparent admission practices, prevent hidden charges and protect students from misleading information and unauthorized intermediaries.
           </p>
         </div>
 
