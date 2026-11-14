@@ -134,29 +134,29 @@ function EquivalencyRosette3D() {
 /* ─── Comparison Matrix Rows ─── */
 const comparisonRows = [
   {
-    feature: "Tuition & Hostel Fee Schedule",
-    traditional: "Inflated packages with hidden agent markups ($500–$2,000 extra per year)",
-    studyIndia: "100% Official University Gazette Fee — Zero dollar/rupee markup",
+    feature: "Tuition & Hostel Fees",
+    traditional: "Inflated package prices with hidden agent markups ($500–$2,000 extra per year)",
+    studyIndia: "100% Official University Fee Structure — Zero extra markup on tuition",
   },
   {
-    feature: "Fee Payment Destination",
-    traditional: "Cash or personal transfers routed through third-party agency accounts",
-    studyIndia: "Direct SWIFT / Flywire / Bank Wire to the Official University Registrar Account",
+    feature: "How You Pay Tuition Fees",
+    traditional: "Cash or transfers sent to personal or third-party agency bank accounts",
+    studyIndia: "Paid directly by the student/family to the University’s Official Bank Account",
   },
   {
-    feature: "Global & Regional Accreditation",
-    traditional: "Often promote unaccredited colleges that fail global licensing exams",
-    studyIndia: "Strict 4-tier pre-audit (UGC, AICTE, WHO/WDOMS, ABET, WES & National Councils)",
+    feature: "University & Degree Recognition",
+    traditional: "Often promote unverified colleges whose degrees face issues at home or abroad",
+    studyIndia: "Only UGC, AICTE, NAAC & Council-approved universities with global recognition",
   },
   {
-    feature: "Admission Offer & Visa Letter",
-    traditional: "Conditional agent letters with delayed university confirmation",
-    studyIndia: "Direct Registrar Provisional Admission Letter + Official Consular Visa Tracking ID",
+    feature: "Offer Letter & Visa Support",
+    traditional: "Unofficial agent letters with slow or uncertain university confirmation",
+    studyIndia: "Official University Admission Letter + Complete Student Visa & NOC Guidance",
   },
   {
-    feature: "Application & Processing Fee",
-    traditional: "$300 to $1,000+ unauthorized consultancy markup",
-    studyIndia: "$100 USD for International Students • NPR 1,000 for Nepali Students",
+    feature: "Admission Guidance & Support",
+    traditional: "High consultancy charges ($300 to $1,000+) with limited post-arrival help",
+    studyIndia: "Transparent support from university selection to hostel & campus onboarding",
   },
 ];
 
@@ -386,28 +386,31 @@ export function AboutInteractiveShowcase() {
               <div className="flex items-start justify-between gap-3">
                 <FeeTransparencyGem3D />
                 <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/80">
-                  Zero Hidden Markup
+                  No Hidden Charges
                 </span>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <h3 className="text-xl font-extrabold text-slate-900 font-heading group-hover:text-emerald-800 transition-colors">
                   100% Fee Transparency
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  Every tuition and hostel fee displayed on our platform is identical to the{" "}
+                  Every tuition and hostel fee displayed on our platform is based on the{" "}
                   <span className="font-semibold text-slate-800">
-                    university&apos;s official international fee gazette
+                    university’s officially published fee structure
                   </span>
-                  . We never add markups, secret consultancy charges, or commission deductions from student scholarships.
+                  .
+                </p>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  We do not add hidden markups, undisclosed consultancy charges or deduct commissions from students’ scholarships. Our commitment is to ensure complete fee transparency at every stage of the admission process.
                 </p>
               </div>
 
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-2">
                 {[
-                  "Multi-currency fee transparency (USD $, INR ₹, EUR €, AED, NPR)",
-                  "Tuition wired directly from your family bank to the university",
-                  "100% merit scholarship pass-through directly to student invoice",
+                  "Clear fee comparison in INR (₹), USD ($), and NPR (रू)",
+                  "Tuition fees are paid directly to the official university account",
+                  "100% of your scholarship goes directly toward reducing your fee",
                 ].map((pt, i) => (
                   <div key={i} className="flex items-start gap-2 text-xs text-slate-700 font-medium">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
@@ -418,40 +421,43 @@ export function AboutInteractiveShowcase() {
             </div>
 
             <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-700">
-              <span>Official Gazette Verified</span>
+              <span>Official University Fee Structure</span>
               <ShieldCheck className="w-4 h-4" />
             </div>
           </div>
 
-          {/* Pillar 2: Direct University Liaisons */}
+          {/* Pillar 2: Direct University Admission Support */}
           <div className="group relative rounded-3xl bg-white border border-slate-200/90 hover:border-teal-500/50 p-7 sm:p-8 shadow-[0_8px_30px_rgb(15,23,42,0.04)] hover:shadow-[0_24px_50px_-12px_rgba(13,148,136,0.16)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden">
             <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-teal-500 via-emerald-500 to-cyan-600" />
             <div className="space-y-5">
               <div className="flex items-start justify-between gap-3">
                 <UniversityColonnade3D />
                 <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-teal-50 text-teal-800 border border-teal-200/80">
-                  Direct Registrar Desk
+                  Direct Application
                 </span>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <h3 className="text-xl font-extrabold text-slate-900 font-heading group-hover:text-teal-800 transition-colors">
-                  Direct University Liaisons
+                  Direct University Admission Support
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  We coordinate directly with the{" "}
+                  We work directly with the{" "}
                   <span className="font-semibold text-slate-800">
-                    International Relations Offices (IRO) and Registrars
+                    international admission offices of accredited Indian universities
                   </span>{" "}
-                  at UGC, AICTE, and NAAC A++ accredited universities, giving global applicants real-time digital tracking from application to visa support letter.
+                  so your application is handled safely, accurately, and without middlemen.
+                </p>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  From checking your eligibility and verifying documents to receiving your official admission letter and visa guidance, our team supports you at every step.
                 </p>
               </div>
 
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-2">
                 {[
-                  "Authorized international admission desk for 300+ campuses",
-                  "Admission updates & provisional offer letters within 10–15 working days",
-                  "Direct international hostel & airport pickup reservation",
+                  "Direct admission guidance for 300+ universities & institutions",
+                  "Admission updates & offer letters within 10–15 working days",
+                  "Complete help with student visa, hostel booking & arrival",
                 ].map((pt, i) => (
                   <div key={i} className="flex items-start gap-2 text-xs text-slate-700 font-medium">
                     <CheckCircle2 className="w-3.5 h-3.5 text-teal-600 shrink-0 mt-0.5" />
@@ -462,12 +468,12 @@ export function AboutInteractiveShowcase() {
             </div>
 
             <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-teal-700">
-              <span>Zero Sub-Agent Chain</span>
+              <span>No Unverified Middlemen</span>
               <Landmark className="w-4 h-4" />
             </div>
           </div>
 
-          {/* Pillar 3: Worldwide Degree Recognition */}
+          {/* Pillar 3: Globally Recognized Degrees */}
           <div className="group relative rounded-3xl bg-white border border-slate-200/90 hover:border-amber-500/50 p-7 sm:p-8 shadow-[0_8px_30px_rgb(15,23,42,0.04)] hover:shadow-[0_24px_50px_-12px_rgba(245,158,11,0.16)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden">
             <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-amber-500 via-emerald-500 to-teal-600" />
             <div className="space-y-5">
@@ -478,24 +484,27 @@ export function AboutInteractiveShowcase() {
                 </span>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <h3 className="text-xl font-extrabold text-slate-900 font-heading group-hover:text-emerald-800 transition-colors">
-                  Global Degree Recognition
+                  Globally Recognized Degrees
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  Our compliance team verifies that every listed program holds statutory global and regional recognition so graduates can pursue{" "}
+                  We carefully verify that every university and course listed on our platform is{" "}
                   <span className="font-semibold text-slate-800">
-                    international licensing, global employment, or Master&apos;s/PhD studies
-                  </span>{" "}
-                  anywhere in the world.
+                    officially accredited and recognized in India and internationally
+                  </span>
+                  .
+                </p>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  This ensures your degree is respected worldwide — whether you plan to work in your home country, appear for licensing exams, or pursue higher studies abroad.
                 </p>
               </div>
 
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-2">
                 {[
-                  "Washington Accord & ABET accredited Engineering programs",
-                  "WHO / WDOMS & WFME recognized Medical & Nursing colleges",
-                  "WES (USA/Canada), UK ENIC, GCC & SAARC council parity",
+                  "UGC recognized & NAAC A/A+/A++ accredited Indian universities",
+                  "AICTE & NBA approved Engineering, IT & Management colleges",
+                  "NMC, INC, PCI & BCI approved Medical, Nursing, Pharmacy & Law colleges",
                 ].map((pt, i) => (
                   <div key={i} className="flex items-start gap-2 text-xs text-slate-700 font-medium">
                     <CheckCircle2 className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
@@ -506,7 +515,7 @@ export function AboutInteractiveShowcase() {
             </div>
 
             <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-amber-700">
-              <span>WHO • ABET • WES • AIU</span>
+              <span>UGC • AICTE • NAAC • NIRF • AIU</span>
               <Award className="w-4 h-4" />
             </div>
           </div>
@@ -753,7 +762,7 @@ export function AboutInteractiveShowcase() {
             <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black font-heading text-white tracking-tight leading-tight">
               Speak with Our International{" "}
               <span className="bg-gradient-to-r from-emerald-300 via-teal-200 to-emerald-400 bg-clip-text text-transparent">
-                Admissions Deans
+                Admission Advisors
               </span>{" "}
               Today
             </h3>
